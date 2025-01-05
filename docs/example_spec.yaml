@@ -1,0 +1,213 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "User Authentication API",
+    "version": "1.0.0",
+    "description": "API untuk mengelola proses login, register, dan logout, termasuk contoh CRUD, pencarian, dan paginasi."
+  },
+  "servers": [
+    {
+      "url": "https://localhost:3000/v1",
+      "description": "Server lokal"
+    }
+  ],
+  "paths": {
+    "/example": {
+      "get": {
+        "summary": "Mendapatkan daftar data",
+        "description": "Mengambil daftar data dengan dukungan pencarian dan paginasi.",
+        "parameters": [
+          {
+            "name": "search",
+            "in": "query",
+            "description": "Kata kunci pencarian",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "description": "Nomor halaman untuk paginasi",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 1
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "Jumlah item per halaman",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 10
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Daftar data berhasil diambil.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Example"
+                      }
+                    },
+                    "pagination": {
+                      "type": "object",
+                      "properties": {
+                        "page": { "type": "integer" },
+                        "limit": { "type": "integer" },
+                        "totalItems": { "type": "integer" },
+                        "totalPages": { "type": "integer" }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Menambahkan data baru",
+        "description": "Menambahkan item baru ke dalam daftar data.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ExampleInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Data berhasil ditambahkan.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Example"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/example/{id}": {
+      "get": {
+        "summary": "Mengambil data berdasarkan ID",
+        "description": "Mengambil detail data dengan ID tertentu.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Detail data berhasil diambil.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Example"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "summary": "Memperbarui data",
+        "description": "Memperbarui data dengan ID tertentu.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ExampleInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Data berhasil diperbarui.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Example"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "summary": "Menghapus data",
+        "description": "Menghapus data dengan ID tertentu.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Data berhasil dihapus."
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Example": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string" },
+          "name": { "type": "string" },
+          "description": { "type": "string" },
+          "createdAt": { "type": "string", "format": "date-time" },
+          "updatedAt": { "type": "string", "format": "date-time" }
+        }
+      },
+      "ExampleInput": {
+        "type": "object",
+        "properties": {
+          "name": { "type": "string" },
+          "description": { "type": "string" }
+        },
+        "required": ["name"]
+      }
+    }
+  }
+}

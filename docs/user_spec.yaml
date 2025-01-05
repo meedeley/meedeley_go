@@ -1,0 +1,155 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "User Authentication API",
+    "version": "1.0.0",
+    "description": "API untuk mengelola proses login, register, dan logout."
+  },
+  "servers": [
+    {
+      "url": "https://localhost:3000/v1",
+      "description": "Server lokal"
+    }
+  ],
+  "paths": {
+    "/auth/register": {
+      "post": {
+        "summary": "Register user baru",
+        "description": "Mendaftarkan pengguna baru ke sistem.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "example": "John Doe"
+                  },
+                  "email": {
+                    "type": "string",
+                    "example": "johndoe@example.com"
+                  },
+                  "password": {
+                    "type": "string",
+                    "example": "password123"
+                  }
+                },
+                "required": ["name", "email", "password"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "User berhasil didaftarkan.",
+            "content": {
+              "application/json": {
+                "example": {
+                  "message": "User registered successfully.",
+                  "data": {
+                    "id": 1,
+                    "name": "John Doe",
+                    "email": "johndoe@example.com"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validasi gagal.",
+            "content": {
+              "application/json": {
+                "example": {
+                  "message": "Validation error",
+                  "errors": {
+                    "email": ["Email sudah terdaftar."]
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/auth/login": {
+      "post": {
+        "summary": "Login user",
+        "description": "Autentikasi pengguna dan memberikan token akses.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "email": {
+                    "type": "string",
+                    "example": "johndoe@example.com"
+                  },
+                  "password": {
+                    "type": "string",
+                    "example": "password123"
+                  }
+                },
+                "required": ["email", "password"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Login berhasil.",
+            "content": {
+              "application/json": {
+                "example": {
+                  "message": "Login successful.",
+                  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Autentikasi gagal.",
+            "content": {
+              "application/json": {
+                "example": {
+                  "message": "Invalid credentials."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/auth/logout": {
+      "post": {
+        "summary": "Logout user",
+        "description": "Menghapus token akses pengguna.",
+        "responses": {
+          "200": {
+            "description": "Logout berhasil.",
+            "content": {
+              "application/json": {
+                "example": {
+                  "message": "Logout successful."
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Token tidak valid atau tidak ditemukan.",
+            "content": {
+              "application/json": {
+                "example": {
+                  "message": "Unauthorized."
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
