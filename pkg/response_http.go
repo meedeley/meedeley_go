@@ -4,12 +4,12 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
-	"os"
 )
 
 type Response struct {
 	Status  int    `json:"status"`
 	Message string `json:"message"`
+	Data    any    `json:"data,omitempty"`
 }
 
 func Response404(w http.ResponseWriter) {
@@ -48,36 +48,27 @@ func Response401(w http.ResponseWriter) {
 	ResponseJSON(w, http.StatusUnauthorized, err, nil)
 }
 
-func Response401(w http.ResponseWriter) {
-	err := Response{
-		Status:  http.StatusNotFound,
-		Message: "no found",
+func ResponseJSON(w http.ResponseWriter, statusCode int, data any, headers http.Header) {
+	response := Response{
+		Status: statusCode,
+		Data:   data,
 	}
 
-	ResponseJSON(w, http.StatusNotFound, err, nil)
-}
-
-func ResponseJSON(w http.ResponseWriter, statusCode int, data any, headers http.Header) {
-
-	json, err := json.Marshal(data)
-
+	json, err := json.Marshal(response)
 	if err != nil {
-		log.Println(err.Error())
-		path := "pkg/log/error.log"
-		file, _ := os.OpenFile(path, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
-		defer file.Close()
-		w.WriteHeader(http.StatusInternalServerError)
+		log.Printf("Error serializing JSON: %v", err)
+		Response500(w)
 		return
 	}
 
-	for k, v := range headers {
-		w.Header()[k] = v
+	for key, values := range headers {
+		for _, value := range values {
+			w.Header().Add(key, value)
+		}
 	}
 
 	w.Header().Set("Content-Type", "application/json")
+
 	w.WriteHeader(statusCode)
-	w.Write(Response{
-		Status:  int(statusCode)
-		Message: string(json),
-	})
+	w.Write(json)
 }

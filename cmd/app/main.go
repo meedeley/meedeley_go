@@ -1,13 +1,21 @@
-package app
+package main
 
 import (
+	"log"
+
+	"github.com/meedeley/go-launch-starter-code/internal/configs"
 	"github.com/meedeley/go-launch-starter-code/internal/delivery/http"
-	"github.com/meedeley/go-launch-starter-code/pkg"
 )
 
 func main() {
 
-	pkg.ZeroLog()
-	http.Http()
+	logger := log.Default()
 
+	app := configs.RunApp{
+		Http: http.Http(),
+		Cors: "*",
+		Log:  logger,
+	}
+
+	app.Start()
 }
