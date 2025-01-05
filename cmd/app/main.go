@@ -12,7 +12,7 @@ func main() {
 	logger := log.Default()
 
 	app := configs.RunApp{
-		Http: http.Http(),
+		Http: http.Http,
 		Cors: "*",
 		Log:  logger,
 	}
