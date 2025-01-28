@@ -20,10 +20,9 @@ func RunAppWithGracefulShutdown() *fiber.App {
 	}
 
 	app := fiber.New(fiber.Config{
-		AppName:       os.Getenv("APP_NAME"),
-		StrictRouting: true,
-		ErrorHandler:  fiber.DefaultErrorHandler,
-		IdleTimeout:   time.Hour * 1,
+		AppName:      os.Getenv("APP_NAME"),
+		ErrorHandler: fiber.DefaultErrorHandler,
+		IdleTimeout:  time.Hour * 1,
 	})
 
 	c := make(chan os.Signal, 1)
@@ -33,10 +32,6 @@ func RunAppWithGracefulShutdown() *fiber.App {
 		fmt.Println("Gracefully shutting down...")
 		_ = app.Shutdown()
 	}()
-
-	if err := app.Listen(":3000"); err != nil {
-		log.Panic(err)
-	}
 
 	fmt.Println("Running cleanup tasks...")
 

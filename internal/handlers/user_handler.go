@@ -1,21 +1,28 @@
 package handlers
 
-import "github.com/meedeley/go-launch-starter-code/internal/entities"
+import (
+	"github.com/gofiber/fiber/v2"
+	"github.com/meedeley/go-launch-starter-code/internal/entities"
+)
 
-type UserHandler interface {
-	Register() (entities.User, error)
-	Login() (entities.User, error)
-	Logout() (entities.User, error)
+func RegisterHandler(c *fiber.Ctx) error {
+	user := new(entities.User)
+
+	err := c.BodyParser(user)
+
+	if err != nil {
+		return err
+	}
+
+	
+
+
 }
 
-func Register() {
+func LoginHandler() {
 
 }
 
-func Login() {
-
-}
-
-func Logout() {
+func LogoutHandler() {
 
 }
