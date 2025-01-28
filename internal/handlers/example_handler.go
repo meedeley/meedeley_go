@@ -14,4 +14,6 @@ func FindById(entities.Example, error) {
 
 }
 
-func Create()
+func Create() {
+
+}
