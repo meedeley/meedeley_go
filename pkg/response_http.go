@@ -1,9 +1,7 @@
 package pkg
 
 import (
-	"encoding/json"
-	"log"
-	"net/http"
+	"github.com/gofiber/fiber/v2"
 )
 
 type Response struct {
@@ -12,63 +10,53 @@ type Response struct {
 	Data    any    `json:"data,omitempty"`
 }
 
-func Response404(w http.ResponseWriter) {
+func Response404(c *fiber.Ctx) error {
 	err := Response{
-		Status:  http.StatusNotFound,
+		Status:  fiber.StatusNotFound,
 		Message: "Resource not found",
 	}
 
-	ResponseJSON(w, http.StatusNotFound, err, nil)
+	return ResponseJSON(c, fiber.StatusNotFound, err, nil)
 }
 
-func Response409(w http.ResponseWriter) {
+func Response409(c *fiber.Ctx) error {
 	err := Response{
-		Status:  http.StatusConflict,
+		Status:  fiber.StatusConflict,
 		Message: "Conflict occurred",
 	}
 
-	ResponseJSON(w, http.StatusConflict, err, nil)
+	return ResponseJSON(c, fiber.StatusConflict, err, nil)
 }
 
-func Response500(w http.ResponseWriter) {
+func Response500(c *fiber.Ctx) error {
 	err := Response{
-		Status:  http.StatusInternalServerError,
+		Status:  fiber.StatusInternalServerError,
 		Message: "Internal server error",
 	}
 
-	ResponseJSON(w, http.StatusInternalServerError, err, nil)
+	return ResponseJSON(c, fiber.StatusInternalServerError, err, nil)
 }
 
-func Response401(w http.ResponseWriter) {
+func Response401(c *fiber.Ctx) error {
 	err := Response{
-		Status:  http.StatusUnauthorized,
+		Status:  fiber.StatusUnauthorized,
 		Message: "Unauthorized access",
 	}
 
-	ResponseJSON(w, http.StatusUnauthorized, err, nil)
+	return ResponseJSON(c, fiber.StatusUnauthorized, err, nil)
 }
 
-func ResponseJSON(w http.ResponseWriter, statusCode int, data any, headers http.Header) {
+func ResponseJSON(c *fiber.Ctx, statusCode int, data any, headers map[string]string) error {
 	response := Response{
 		Status: statusCode,
 		Data:   data,
 	}
 
-	json, err := json.Marshal(response)
-	if err != nil {
-		log.Printf("Error serializing JSON: %v", err)
-		Response500(w)
-		return
+	for key, value := range headers {
+		c.Set(key, value)
 	}
 
-	for key, values := range headers {
-		for _, value := range values {
-			w.Header().Add(key, value)
-		}
-	}
+	c.Set("Content-Type", "application/json")
 
-	w.Header().Set("Content-Type", "application/json")
-
-	w.WriteHeader(statusCode)
-	w.Write(json)
+	return c.Status(statusCode).JSON(response)
 }
