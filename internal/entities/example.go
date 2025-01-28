@@ -9,6 +9,7 @@ import (
 type Example struct {
 	Id          int       `json:"id"`
 	Name        string    `json:"name"`
+	Image       string    `json:"image"`
 	Description string    `json:"description"`
 	CreatedAt   time.Time `json:"created_at"`
 	UpdatedAt   time.Time `json:"updated_at"`
@@ -17,6 +18,7 @@ type Example struct {
 type ExampleRequest struct {
 	Id          int    `json:"id" form:"id" validate:"required,numeric"`
 	Name        string `json:"name" form:"name" validate:"required,min=3,max=100"`
+	Image       string `json:"image" fom:"image" validate:"required"`
 	Description string `json:"description" form:"description" validate:"required"`
 }
 
