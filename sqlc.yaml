@@ -1,0 +1,13 @@
+version: "2"
+sql:
+
+# => You can copy this if u want generate new sqlc file
+  - name: "users"
+    engine: "postgresql"
+    schema: "db/migrations"
+    queries: "db/sql/users.sql"
+    gen:
+      go:
+        package: "users"
+        sql_package: "pgx/v5"
+        out: "db/models/users"
