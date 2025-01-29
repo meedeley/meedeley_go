@@ -9,7 +9,7 @@ import (
 
 func Http() *fiber.App {
 
-	app := conf.RunAppWithGracefulShutdown()
+	app := conf.RunApp()
 
 	// => Default Prefix
 	api := app.Group("api")

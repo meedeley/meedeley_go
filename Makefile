@@ -17,6 +17,9 @@ DATABASE_URL=postgres://$(DB_USER):$(DB_PASSWORD)@$(DB_HOST):$(DB_PORT)/$(DB_NAM
 # Build commands
 .PHONY: build run clean migration migrate-up migrate-down migrate-force migrate-version db-test
 
+air:
+	air
+	
 build:
 	@echo "Building application..."
 	@mkdir -p $(BINARY_DIR)
