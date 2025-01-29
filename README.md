@@ -61,10 +61,10 @@ tests/      # Test files and test utilities
 | Library Name |  IsNeeded  |
 |:-----|:--------:|
 | Golang >= v1.16   | ✅ |
-| PostgreSQL || MySQL || Sqlite  |  ✅  |
+| PostgreSQL - MySQL - Sqlite  |  ✅  |
 | Golang Migrate   | ✅ |
 | Makefile   | ✅ |
-| Air Hot Reload🔥   | ✅ |
+| Air Hot Reload🔥   | ✅ | 
 
 ## Instalation
 Clone this repository correctly
