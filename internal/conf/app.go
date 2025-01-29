@@ -15,24 +15,23 @@ import (
 )
 
 func RunApp() *fiber.App {
+	if err := godotenv.Load(".env"); err != nil {
+		log.Printf("Warning: Could not load .env file: %v", err)
+	}
 
 	app := fiber.New(fiber.Config{
-		AppName:      os.Getenv("APP_NAME"),
-		ErrorHandler: fiber.DefaultErrorHandler,
-		IdleTimeout:  time.Hour * 1,
+		AppName:     os.Getenv("APP_NAME"),
+		IdleTimeout: time.Hour * 1,
 	})
 
 	app.Use(cors.New())
 
-	return setUpRouteWithGracefullShutdown(app)
+	setUpGracefulShutdown(app)
+
+	return app
 }
 
-func setUpRouteWithGracefullShutdown(app *fiber.App) *fiber.App {
-	err := godotenv.Load(".env")
-	if err != nil {
-		log.Printf("Warning: Could not load .env file: %v", err)
-	}
-
+func setUpGracefulShutdown(app *fiber.App) {
 	c := make(chan os.Signal, 1)
 	signal.Notify(c, os.Interrupt, syscall.SIGTERM)
 
@@ -49,16 +48,16 @@ func setUpRouteWithGracefullShutdown(app *fiber.App) *fiber.App {
 			log.Printf("Error during shutdown: %v", err)
 		}
 
-		<-ctx.Done()
-		if ctx.Err() == context.DeadlineExceeded {
-			fmt.Println("Shutdown timed out after 5 seconds, forcing exit...")
-		} else {
-			fmt.Println("Clean shutdown completed")
+		select {
+		case <-ctx.Done():
+			if ctx.Err() == context.DeadlineExceeded {
+				fmt.Println("Shutdown timed out after 5 seconds, forcing exit...")
+			} else {
+				fmt.Println("Clean shutdown completed")
+			}
 		}
 
 		fmt.Println("Cleanup tasks completed")
 		os.Exit(0)
 	}()
-
-	return app
 }

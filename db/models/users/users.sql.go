@@ -10,17 +10,18 @@ import (
 )
 
 const createUser = `-- name: CreateUser :exec
-INSERT INTO users (name, email)
-VALUES ($1, $2)
+INSERT INTO users (name, email, password)
+VALUES ($1, $2, $3)
 `
 
 type CreateUserParams struct {
-	Name  string
-	Email string
+	Name     string
+	Email    string
+	Password string
 }
 
 func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) error {
-	_, err := q.db.Exec(ctx, createUser, arg.Name, arg.Email)
+	_, err := q.db.Exec(ctx, createUser, arg.Name, arg.Email, arg.Password)
 	return err
 }
 
