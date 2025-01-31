@@ -15,11 +15,7 @@ DB_NAME=meedeley
 DATABASE_URL=postgres://$(DB_USER):$(DB_PASSWORD)@$(DB_HOST):$(DB_PORT)/$(DB_NAME)?sslmode=disable
 
 # Build commands
-.PHONY: build run clean migration migrate-up migrate-down migrate-force migrate-version db-test
 
-air:
-	air
-	
 build:
 	@echo "Building application..."
 	@mkdir -p $(BINARY_DIR)
@@ -41,7 +37,7 @@ migration:
 		echo "Error: Migration name is required. Usage: make migration name=<migration_name>"; \
 		exit 1; \
 	else \
-		migrate create -ext sql -dir $(MIGRATIONS_DIR) -seq "$(name)"; \
+		migrate create -ext sql -dir $(MIGRATIONS_DIR) "$(name)"; \
 		echo "Migration file created for: $(name)"; \
 	fi
 

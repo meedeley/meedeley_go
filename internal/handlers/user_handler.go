@@ -18,7 +18,10 @@ func hashPassword(password string) (string, error) {
 	return string(bytes), err
 }
 
-func validToken(t *jwt.Token, id string)
+func validToken(t *jwt.Token, id string) {
+
+}
+
 func CreateUser(c *fiber.Ctx) error {
 	var userReq entities.UserRegisterRequest
 
@@ -26,7 +29,7 @@ func CreateUser(c *fiber.Ctx) error {
 
 	defer cancel()
 
-	if err := c.BodyParser(user); err != nil {
+	if err := c.BodyParser(userReq); err != nil {
 		return pkg.ResponseJSON(c, 500, pkg.Response{
 			Status:  500,
 			Message: "Failed to parse request body",
@@ -41,12 +44,14 @@ func CreateUser(c *fiber.Ctx) error {
 	hashedPassword, err := hashPassword(userReq.Password)
 
 	if err != nil {
-		return log.
+		return err
 	}
-	
+
 	q.CreateUser(ctx, users.CreateUserParams{
 		Name:     userReq.Name,
 		Email:    userReq.Email,
 		Password: hashedPassword,
 	})
+
+	return nil
 }
