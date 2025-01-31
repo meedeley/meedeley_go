@@ -58,10 +58,10 @@ tests/      # Test files and test utilities
 - `README.md`: Project documentation and guidance.
 
 ## Requirement Before You Run This Starter
-| Library Name |  IsNeeded  |
+| Package Name |  IsNeeded  |
 |:-----|:--------:|
 | Golang >= v1.16   | ✅ |
-| PostgreSQL - MySQL - Sqlite  |  ✅  |
+| PostgreSQL  |  ✅  |
 | Golang Migrate   | ✅ |
 | Makefile   | ✅ |
 | Air Hot Reload🔥   | ✅ | 
@@ -73,7 +73,7 @@ git clone http://github.com/meedeley/meedeley_code.git
 ```
 🔥🔥🔥
 ```
-cd directory_code
+cd meedeley_code
 go mod tidy
 ```
 💧 and voilla...
