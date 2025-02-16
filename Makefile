@@ -1,21 +1,16 @@
-# THANKS TO CHATGPT FOR MAKE THIS HELPER
-
 # Application settings
 BINARY_NAME=app
 BINARY_DIR=bin
 MAIN_FILE=cmd/app/main.go
 
-# Database settings
-MIGRATIONS_DIR=db/migrations
-DB_USER=postgres
-DB_PASSWORD=postgres
-DB_HOST=localhost
-DB_PORT=5432
-DB_NAME=meedeley
-DATABASE_URL=postgres://$(DB_USER):$(DB_PASSWORD)@$(DB_HOST):$(DB_PORT)/$(DB_NAME)?sslmode=disable
+# Include .env file
+-include .env
+export
+
+# Database connection string (using env vars)
+DATABASE_URL=postgres://$(DB_USER):$(DB_PASSWORD)@$(DB_HOST):$(DB_PORT)/$(DB_NAME)?sslmode=$(DB_SSL_MODE)
 
 # Build commands
-
 build:
 	@echo "Building application..."
 	@mkdir -p $(BINARY_DIR)
@@ -70,7 +65,6 @@ migrate-version:
 	@echo "Current migration version:" && \
 	migrate -path $(MIGRATIONS_DIR) -database "$(DATABASE_URL)" version
 
-# Helper command to test database connection
 db-test:
 	@echo "Testing database connection..."
 	@echo "Database URL: $(DATABASE_URL)"
@@ -79,3 +73,30 @@ db-test:
 	else \
 		echo "psql not found. Please install PostgreSQL client tools."; \
 	fi
+
+.PHONY: build run clean migration migrate-up migrate-down migrate-force migrate-version db-test
+
+sqlc:
+	@echo "Generate sqlc..." && \
+	sqlc generate
+
+	@if command -v psql >/dev/null; then \
+		echo "successfully generate sqlc..."; \
+	fi
+	
+
+list:
+	@echo "Available make commands:"
+	@echo "  build              - Build the application"
+	@echo "  run               - Build and run the application"
+	@echo "  clean             - Remove build files"
+	@echo "	 sqlc			   - Generate sqlc"
+	@echo "  migration         - Create new migration (usage: make migration name=<name>)"
+	@echo "  migrate-up        - Run all pending migrations"
+	@echo "  migrate-up-one    - Run next pending migration"
+	@echo "  migrate-down      - Rollback last migration"
+	@echo "  migrate-down-all  - Rollback all migrations"
+	@echo "  migrate-force     - Force migration version (usage: make migrate-force version=<version>)"
+	@echo "  migrate-version   - Show current migration version"
+	@echo "  db-test          - Test database connection"
+	@echo "  make-list        - Show this help message"

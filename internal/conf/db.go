@@ -38,7 +38,6 @@ func NewPool() (*pgxpool.Pool, error) {
 		return nil, fmt.Errorf("database ping failed: %w", err)
 	}
 
-	log.Println("✅ Database connection established successfully")
 	return pool, nil
 }
 

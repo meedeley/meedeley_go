@@ -2,6 +2,7 @@ package entities
 
 import (
 	"github.com/go-playground/validator/v10"
+	"github.com/meedeley/go-launch-starter-code/pkg"
 )
 
 type UserRegisterRequest struct {
@@ -10,13 +11,15 @@ type UserRegisterRequest struct {
 	Password string `json:"password" form:"password" validate:"required,min=8"`
 }
 
-func (r *UserRegisterRequest) Validate() error {
+func (r *UserRegisterRequest) Validate() []pkg.ValidationError {
 	validate := validator.New()
-	return validate.Struct(r)
+	err := validate.Struct(r)
+
+	return pkg.ParseValidate(err)
 }
 
 type UserRegisterResponse struct {
-	Id    string `json:"id"`
+	Id    any    `json:"id"`
 	Name  string `json:"name"`
 	Email string `json:"email"`
 }
@@ -32,7 +35,8 @@ func (r *UserLoginRequest) Validate() error {
 }
 
 type UserLoginResponse struct {
-	Id    string `json:"id"`
+	Id    int32  `json:"id"`
 	Name  string `json:"name"`
 	Email string `json:"email"`
+	Token string `json:"token"`
 }

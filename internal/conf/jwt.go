@@ -7,10 +7,12 @@ import (
 	"github.com/joho/godotenv"
 )
 
-func JwtSecret(key string) string {
+func JwtSecret() string {
 	if err := godotenv.Load(".env"); err != nil {
-		fmt.Println("Error loading .enf file")
+		fmt.Println("Error loading .env file")
 	}
 
-	return os.Getenv(key)
+	secret := os.Getenv("JWT_SECRET")
+
+	return secret
 }

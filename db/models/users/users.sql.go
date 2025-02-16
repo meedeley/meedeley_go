@@ -9,42 +9,35 @@ import (
 	"context"
 )
 
-const createUser = `-- name: CreateUser :exec
-INSERT INTO users (name, email, password)
-VALUES ($1, $2, $3)
+const deleteUserById = `-- name: DeleteUserById :exec
+DELETE FROM users WHERE id = $1
 `
 
-type CreateUserParams struct {
-	Name     string
-	Email    string
-	Password string
-}
-
-func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) error {
-	_, err := q.db.Exec(ctx, createUser, arg.Name, arg.Email, arg.Password)
+func (q *Queries) DeleteUserById(ctx context.Context, id int32) error {
+	_, err := q.db.Exec(ctx, deleteUserById, id)
 	return err
 }
 
-const getAllUsers = `-- name: GetAllUsers :many
+const findAllUser = `-- name: FindAllUser :many
 SELECT id, name, email
 FROM users
 `
 
-type GetAllUsersRow struct {
+type FindAllUserRow struct {
 	ID    int32
 	Name  string
 	Email string
 }
 
-func (q *Queries) GetAllUsers(ctx context.Context) ([]GetAllUsersRow, error) {
-	rows, err := q.db.Query(ctx, getAllUsers)
+func (q *Queries) FindAllUser(ctx context.Context) ([]FindAllUserRow, error) {
+	rows, err := q.db.Query(ctx, findAllUser)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []GetAllUsersRow
+	var items []FindAllUserRow
 	for rows.Next() {
-		var i GetAllUsersRow
+		var i FindAllUserRow
 		if err := rows.Scan(&i.ID, &i.Name, &i.Email); err != nil {
 			return nil, err
 		}
@@ -54,4 +47,71 @@ func (q *Queries) GetAllUsers(ctx context.Context) ([]GetAllUsersRow, error) {
 		return nil, err
 	}
 	return items, nil
+}
+
+const findUserByEmail = `-- name: FindUserByEmail :one
+SELECT id, name, email, password FROM users WHERE email = $1
+`
+
+type FindUserByEmailRow struct {
+	ID       int32
+	Name     string
+	Email    string
+	Password string
+}
+
+func (q *Queries) FindUserByEmail(ctx context.Context, email string) (FindUserByEmailRow, error) {
+	row := q.db.QueryRow(ctx, findUserByEmail, email)
+	var i FindUserByEmailRow
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.Email,
+		&i.Password,
+	)
+	return i, err
+}
+
+const findUserById = `-- name: FindUserById :one
+SELECT id, name, email 
+FROM users 
+WHERE id = $1
+`
+
+type FindUserByIdRow struct {
+	ID    int32
+	Name  string
+	Email string
+}
+
+func (q *Queries) FindUserById(ctx context.Context, id int32) (FindUserByIdRow, error) {
+	row := q.db.QueryRow(ctx, findUserById, id)
+	var i FindUserByIdRow
+	err := row.Scan(&i.ID, &i.Name, &i.Email)
+	return i, err
+}
+
+const insertUser = `-- name: InsertUser :one
+INSERT INTO users (name, email, password)
+VALUES ($1, $2, $3)
+RETURNING id, name, email
+`
+
+type InsertUserParams struct {
+	Name     string
+	Email    string
+	Password string
+}
+
+type InsertUserRow struct {
+	ID    int32
+	Name  string
+	Email string
+}
+
+func (q *Queries) InsertUser(ctx context.Context, arg InsertUserParams) (InsertUserRow, error) {
+	row := q.db.QueryRow(ctx, insertUser, arg.Name, arg.Email, arg.Password)
+	var i InsertUserRow
+	err := row.Scan(&i.ID, &i.Name, &i.Email)
+	return i, err
 }
