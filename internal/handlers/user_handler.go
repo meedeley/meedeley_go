@@ -300,9 +300,44 @@ func UpdateUser(c fiber.Ctx) error {
 }
 
 func DeleteUser(c fiber.Ctx) error {
-	param := c.Params("id")
+	var userRes entities.User
 
+	param := c.Params("id")
 	id, _ := strconv.Atoi(param)
 
-	pool.db
+	db, _ := conf.NewPool()
+	defer db.Close()
+
+	q := users.New(db)
+	row, err := q.FindUserById(c.Context(), int32(id))
+	userRes = entities.User{
+		Id:        int(row.ID),
+		Name:      row.Name,
+		Email:     row.Email,
+		CreatedAt: row.CreatedAt.Time,
+		UpdatedAt: row.UpdatedAt.Time,
+	}
+
+	if err != nil {
+		return c.Status(fiber.StatusNotFound).JSON(pkg.Response{
+			Status:  404,
+			Message: fiber.ErrNotFound.Message,
+		})
+	}
+
+	err = q.DeleteUserById(c.Context(), int32(id))
+
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(pkg.Response{
+			Status:  200,
+			Message: fiber.ErrInternalServerError.Message,
+		})
+	}
+
+	return c.Status(fiber.StatusOK).JSON(pkg.Response{
+		Status:  200,
+		Message: "Successfully delete user",
+		Data:    userRes,
+	})
+
 }

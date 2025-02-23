@@ -74,3 +74,9 @@
 [LOG] 2025/02/23 21:34:36 400 -     17.3445ms POST /api/v1/login
 [LOG] 2025/02/23 21:35:44 200 -  1.550298098s POST /api/v1/login
 [LOG] 2025/02/23 21:38:12 200 -  1.444251283s POST /api/v1/login
+[LOG] 2025/02/23 21:50:31 200 -   62.879452ms DELETE /api/v1/user/1
+[LOG] 2025/02/23 21:51:16 200 -   28.673346ms DELETE /api/v1/user/1
+[LOG] 2025/02/23 21:52:53 404 -   18.827876ms DELETE /api/v1/user/1
+[LOG] 2025/02/23 21:53:11 404 -      19.359µs POST /api/v1/user
+[LOG] 2025/02/23 21:53:14 404 -      91.296µs POST /api/v1/user
+[LOG] 2025/02/23 21:53:18 200 -  1.463373874s POST /api/v1/register

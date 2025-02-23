@@ -23,6 +23,7 @@ func Http() *fiber.App {
 	v1.Get("/users", handlers.FindAllUser)
 	v1.Get("/user/:id", handlers.FindUserById)
 	v1.Put("/user/:id", handlers.UpdateUser)
+	v1.Delete("/user/:id", handlers.DeleteUser)
 
 	return app
 }
