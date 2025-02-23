@@ -1,4 +1,4 @@
-package entities
+package domain
 
 import (
 	"time"
@@ -8,12 +8,12 @@ import (
 )
 
 type User struct {
-	Id        int        `json:"id"`
-	Name      string     `json:"name"`
-	Email     string     `json:"email"`
-	Password  string     `json:"password"`
-	CreatedAt *time.Time `json:"created_at"`
-	UpdatedAt *time.Time `json:"updated_at"`
+	Id        int        `json:"id" form:"id"`
+	Name      string     `json:"name" form:"name"`
+	Email     string     `json:"email" form:"email"`
+	Password  string     `json:"password,omitempty" form:"password"`
+	CreatedAt *time.Time `json:"created_at,omitempty"`
+	UpdatedAt *time.Time `json:"updated_at,omitempty"`
 }
 
 type UserRegisterRequest struct {
@@ -50,4 +50,8 @@ type UserLoginResponse struct {
 	Name  string `json:"name"`
 	Email string `json:"email"`
 	Token string `json:"token"`
+}
+
+type UserUpdateRequest struct {
+	Name string `json:"name"`
 }

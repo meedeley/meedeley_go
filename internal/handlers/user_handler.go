@@ -2,13 +2,14 @@ package handlers
 
 import (
 	"context"
+	"strconv"
 	"time"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/meedeley/go-launch-starter-code/db/models/users"
 	"github.com/meedeley/go-launch-starter-code/internal/conf"
-	"github.com/meedeley/go-launch-starter-code/internal/entities"
+	"github.com/meedeley/go-launch-starter-code/internal/domain"
 	"github.com/meedeley/go-launch-starter-code/pkg"
 	"golang.org/x/crypto/bcrypt"
 )
@@ -24,8 +25,8 @@ func CheckPasswordHash(password, hash string) bool {
 }
 
 func Register(c *fiber.Ctx) error {
-	var userReq entities.UserRegisterRequest
-	var userRes entities.UserRegisterResponse
+	var userReq domain.UserRegisterRequest
+	var userRes domain.UserRegisterResponse
 
 	ctx, cancel := context.WithTimeout(c.Context(), 10*time.Second)
 
@@ -63,7 +64,7 @@ func Register(c *fiber.Ctx) error {
 		return err
 	}
 
-	userRes = entities.UserRegisterResponse{
+	userRes = domain.UserRegisterResponse{
 		Id:    row.ID,
 		Name:  row.Name,
 		Email: row.Email,
@@ -77,8 +78,8 @@ func Register(c *fiber.Ctx) error {
 }
 
 func Login(c *fiber.Ctx) error {
-	var userReq entities.UserLoginRequest
-	var userRes entities.UserLoginResponse
+	var userReq domain.UserLoginRequest
+	var userRes domain.UserLoginResponse
 
 	ctx, cancel := context.WithTimeout(c.Context(), 10*time.Second)
 	defer cancel()
@@ -137,14 +138,14 @@ func Login(c *fiber.Ctx) error {
 		})
 	}
 
-	userRes = entities.UserLoginResponse{
+	userRes = domain.UserLoginResponse{
 		Id:    result.ID,
 		Name:  result.Name,
 		Email: result.Email,
 		Token: tokenString,
 	}
 
-	return c.JSON(pkg.Response{
+	return c.Status(fiber.StatusOK).JSON(pkg.Response{
 		Status:  200,
 		Message: "login successful",
 		Data:    userRes,
@@ -174,7 +175,7 @@ func FindAllUser(c *fiber.Ctx) error {
 		result = []users.FindAllUserRow{}
 	}
 
-	return c.Status(200).JSON(pkg.Response{
+	return c.Status(fiber.StatusOK).JSON(pkg.Response{
 		Status:  200,
 		Message: "Successfuly find all users",
 		Data:    result,
@@ -182,6 +183,42 @@ func FindAllUser(c *fiber.Ctx) error {
 
 }
 
-func findUserById() {
+func FindUserById(c *fiber.Ctx) error {
+	var userRes domain.User
+
+	db, _ := conf.NewPool()
+	defer db.Close()
+
+	ctx, cancel := context.WithTimeout(c.Context(), 10*time.Second)
+
+	defer cancel()
+
+	param := c.Params("id")
+	id, _ := strconv.Atoi(param)
+
+	q := users.New(db)
+
+	result, err := q.FindUserById(ctx, int32(id))
+
+	if err != nil {
+		return c.Status(fiber.StatusNotFound).JSON(pkg.Response{
+			Status:  404,
+			Message: "not found",
+		})
+	}
+
+	userRes = domain.User{
+		Id:        int(result.ID),
+		Name:      result.Name,
+		Email:     result.Email,
+		CreatedAt: userRes.CreatedAt,
+		UpdatedAt: userRes.UpdatedAt,
+	}
+
+	return c.Status(fiber.StatusOK).JSON(pkg.Response{
+		Status:  200,
+		Message: "successfully get data",
+		Data:    userRes,
+	})
 
 }

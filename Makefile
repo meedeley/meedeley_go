@@ -2,6 +2,7 @@
 BINARY_NAME=app
 BINARY_DIR=bin
 MAIN_FILE=cmd/app/main.go
+MIGRATIONS_DIR=db/migrations
 
 # Include .env file
 -include .env
@@ -29,37 +30,21 @@ clean:
 # Migration commands
 migration:
 	@if [ -z "$(name)" ]; then \
-		echo "Error: Migration name is required. Usage: make migration name=<migration_name>"; \
-		exit 1; \
-	else \
-		migrate create -ext sql -dir $(MIGRATIONS_DIR) "$(name)"; \
-		echo "Migration file created for: $(name)"; \
-	fi
+        echo "Error: Migration name is required. Usage: make migration name=<migration_name>"; \
+        exit 1; \
+    else \
+        migrate create -ext sql -dir "$(MIGRATIONS_DIR)" "$(name)"; \
+        echo "Migration created: $(name)"; \
+    fi
 
 migrate-up:
-	@echo "Running all pending migrations..." && \
+	@echo "====== MIGRATE UP ======"
 	migrate -path $(MIGRATIONS_DIR) -database "$(DATABASE_URL)" up
 
-migrate-up-one:
-	@echo "Running next pending migration..." && \
-	migrate -path $(MIGRATIONS_DIR) -database "$(DATABASE_URL)" up 1
 
 migrate-down:
-	@echo "Rolling back last migration..." && \
-	migrate -path $(MIGRATIONS_DIR) -database "$(DATABASE_URL)" down 1
-
-migrate-down-all:
-	@echo "Rolling back all migrations..." && \
-	migrate -path $(MIGRATIONS_DIR) -database "$(DATABASE_URL)" down
-
-migrate-force:
-	@if [ -z "$(version)" ]; then \
-		echo "Error: Version is required. Usage: make migrate-force version=<version_number>"; \
-		exit 1; \
-	else \
-		echo "Forcing migration version to $(version)..." && \
-		migrate -path $(MIGRATIONS_DIR) -database "$(DATABASE_URL)" force $(version); \
-	fi
+	@echo "====== MIGRATE DOWN ======"
+	migrate -path "$(MIGRATIONS_DIR)" -database "$(DATABASE_URL)" down
 
 migrate-version:
 	@echo "Current migration version:" && \
@@ -83,20 +68,19 @@ sqlc:
 	@if command -v psql >/dev/null; then \
 		echo "successfully generate sqlc..."; \
 	fi
-	
 
 list:
 	@echo "Available make commands:"
 	@echo "  build              - Build the application"
-	@echo "  run               - Build and run the application"
-	@echo "  clean             - Remove build files"
-	@echo "	 sqlc			   - Generate sqlc"
-	@echo "  migration         - Create new migration (usage: make migration name=<name>)"
-	@echo "  migrate-up        - Run all pending migrations"
-	@echo "  migrate-up-one    - Run next pending migration"
-	@echo "  migrate-down      - Rollback last migration"
-	@echo "  migrate-down-all  - Rollback all migrations"
-	@echo "  migrate-force     - Force migration version (usage: make migrate-force version=<version>)"
-	@echo "  migrate-version   - Show current migration version"
-	@echo "  db-test          - Test database connection"
-	@echo "  make-list        - Show this help message"
+	@echo "  run                - Build and run the application"
+	@echo "  clean              - Remove build files"
+	@echo "  sqlc               - Generate sqlc"
+	@echo "  migration          - Create new migration (usage: make migration name=<name>)"
+	@echo "  migrate-up         - Run all pending migrations"
+	@echo "  migrate-up-one     - Run next pending migration"
+	@echo "  migrate-down       - Rollback last migration"
+	@echo "  migrate-down-all   - Rollback all migrations"
+	@echo "  migrate-force      - Force migration version (usage: make migrate-force version=<version>)"
+	@echo "  migrate-version    - Show current migration version"
+	@echo "  db-test            - Test database connection"
+	@echo "  list               - Show this help message"

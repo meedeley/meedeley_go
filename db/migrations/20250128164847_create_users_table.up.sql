@@ -5,6 +5,6 @@ CREATE TABLE
         "name" VARCHAR(100) NOT NULL,
         "email" VARCHAR(100) NOT NULL,
         "password" VARCHAR(100) NOT NULL,
-        "created_at" TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESAMP,
+        "created_at" TIMESTAMP,
         "updated_at" TIMESTAMP
     )

@@ -7,6 +7,8 @@ package users
 
 import (
 	"context"
+
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 const deleteUserById = `-- name: DeleteUserById :exec
@@ -73,21 +75,27 @@ func (q *Queries) FindUserByEmail(ctx context.Context, email string) (FindUserBy
 }
 
 const findUserById = `-- name: FindUserById :one
-SELECT id, name, email 
-FROM users 
-WHERE id = $1
+SELECT id, name, email, created_at, updated_at FROM users WHERE id = $1
 `
 
 type FindUserByIdRow struct {
-	ID    int32
-	Name  string
-	Email string
+	ID        int32
+	Name      string
+	Email     string
+	CreatedAt pgtype.Timestamptz
+	UpdatedAt pgtype.Timestamp
 }
 
 func (q *Queries) FindUserById(ctx context.Context, id int32) (FindUserByIdRow, error) {
 	row := q.db.QueryRow(ctx, findUserById, id)
 	var i FindUserByIdRow
-	err := row.Scan(&i.ID, &i.Name, &i.Email)
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.Email,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
 	return i, err
 }
 
