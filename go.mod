@@ -5,13 +5,12 @@ go 1.23.3
 require (
 	github.com/go-playground/validator/v10 v10.24.0
 	github.com/gofiber/contrib/jwt v1.0.10
-	github.com/gofiber/fiber/v2 v2.52.6
+	github.com/gofiber/fiber/v2 v2.52.5
 	github.com/gofiber/fiber/v3 v3.0.0-beta.4
 	github.com/golang-jwt/jwt/v5 v5.2.1
 	github.com/jackc/pgx/v5 v5.7.2
 	github.com/joho/godotenv v1.5.1
 	golang.org/x/crypto v0.33.0
-	gorm.io/gorm v1.25.12
 )
 
 require (

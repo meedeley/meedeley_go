@@ -5,7 +5,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v3"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/meedeley/go-launch-starter-code/db/models/users"
@@ -33,7 +33,7 @@ func Register(c fiber.Ctx) error {
 
 	defer cancel()
 
-	if err := c.BodyParser(&userReq); err != nil {
+	if err := c.Bind().Body(&userReq); err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(pkg.Response{
 			Status:  500,
 			Message: fiber.ErrInternalServerError.Message,
@@ -87,7 +87,7 @@ func Login(c fiber.Ctx) error {
 	ctx, cancel := context.WithTimeout(c.Context(), 10*time.Second)
 	defer cancel()
 
-	if err := c.BodyParser(&userReq); err != nil {
+	if err := c.Bind().Body(&userReq); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(pkg.Response{
 			Status:  400,
 			Message: fiber.ErrBadRequest.Message,
@@ -245,7 +245,7 @@ func UpdateUser(c fiber.Ctx) error {
 	ctx, cancel := context.WithTimeout(c.Context(), 10*time.Second)
 	defer cancel()
 
-	if err := c.BodyParser(&userReq); err != nil {
+	if err := c.Bind().Body(&userReq); err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(pkg.Response{
 			Status:  500,
 			Message: fiber.ErrInternalServerError.Message,

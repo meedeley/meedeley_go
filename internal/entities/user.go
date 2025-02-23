@@ -18,7 +18,7 @@ type User struct {
 
 type UserRegisterRequest struct {
 	Name     string `json:"name" form:"name" validate:"required,min=3,max=100"`
-	Email    string `json:"email" form:"email" validate:"required,email"`
+	Email    string `json:"email" form:"email" validate:"required,email,unique"`
 	Password string `json:"password" form:"password" validate:"required,min=8"`
 }
 
@@ -42,9 +42,11 @@ type UserLoginRequest struct {
 	Password string `json:"password" form:"password" validate:"required,min=8"`
 }
 
-func (r *UserLoginRequest) Validate() error {
+func (r *UserLoginRequest) Validate() []pkg.ValidationError {
 	validate := validator.New()
-	return validate.Struct(r)
+	err := validate.Struct(r)
+
+	return pkg.ParseValidate(err)
 }
 
 type UserLoginResponse struct {
@@ -57,13 +59,15 @@ type UserLoginResponse struct {
 }
 
 type UpdateUserRequest struct {
-	Name  string `json:"name" form:"name" validate:"required,min=1"`
-	Email string `json:"email" form:"email" validate:"required,min=2"`
+	Name  string `json:"name" form:"name" validate:"required"`
+	Email string `json:"email" form:"email" validate:"required,email,min=2"`
 }
 
-func (r *UpdateUserRequest) Validate() error {
+func (r *UpdateUserRequest) Validate() []pkg.ValidationError {
 	validate := validator.New()
-	return validate.Struct(r)
+	err := validate.Struct(r)
+
+	return pkg.ParseValidate(err)
 }
 
 type UpdateUserResponse struct {
