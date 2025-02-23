@@ -265,11 +265,12 @@ func UpdateUser(c fiber.Ctx) error {
 
 	q := users.New(db)
 
+	updatedAt := time.Now()
 	err := q.UpdateUserById(ctx, users.UpdateUserByIdParams{
 		ID:        int32(id),
 		Name:      userReq.Name,
 		Email:     userReq.Email,
-		UpdatedAt: pgtype.Timestamp{Time: time.Now()},
+		UpdatedAt: pgtype.Timestamp{Time: updatedAt},
 	})
 
 	if err != nil {
