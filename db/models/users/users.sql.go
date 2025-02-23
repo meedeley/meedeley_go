@@ -12,7 +12,15 @@ import (
 )
 
 const deleteUserById = `-- name: DeleteUserById :exec
-DELETE FROM users WHERE id = $1 RETURNING id, name, email, created_at, updated_at
+DELETE FROM users
+WHERE
+    id = $1
+RETURNING
+    id,
+    name,
+    email,
+    created_at,
+    updated_at
 `
 
 func (q *Queries) DeleteUserById(ctx context.Context, id int32) error {
@@ -21,14 +29,15 @@ func (q *Queries) DeleteUserById(ctx context.Context, id int32) error {
 }
 
 const findAllUser = `-- name: FindAllUser :many
-SELECT id, name, email
-FROM users
+SELECT id, name, email, created_at, updated_at FROM users
 `
 
 type FindAllUserRow struct {
-	ID    int32
-	Name  string
-	Email string
+	ID        int32
+	Name      string
+	Email     string
+	CreatedAt pgtype.Timestamptz
+	UpdatedAt pgtype.Timestamp
 }
 
 func (q *Queries) FindAllUser(ctx context.Context) ([]FindAllUserRow, error) {
@@ -40,7 +49,13 @@ func (q *Queries) FindAllUser(ctx context.Context) ([]FindAllUserRow, error) {
 	var items []FindAllUserRow
 	for rows.Next() {
 		var i FindAllUserRow
-		if err := rows.Scan(&i.ID, &i.Name, &i.Email); err != nil {
+		if err := rows.Scan(
+			&i.ID,
+			&i.Name,
+			&i.Email,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+		); err != nil {
 			return nil, err
 		}
 		items = append(items, i)
@@ -75,7 +90,15 @@ func (q *Queries) FindUserByEmail(ctx context.Context, email string) (FindUserBy
 }
 
 const findUserById = `-- name: FindUserById :one
-SELECT id, name, email, created_at, updated_at FROM users WHERE id = $1
+SELECT
+    id,
+    name,
+    email,
+    created_at,
+    updated_at
+FROM users
+WHERE
+    id = $1
 `
 
 type FindUserByIdRow struct {
@@ -100,9 +123,15 @@ func (q *Queries) FindUserById(ctx context.Context, id int32) (FindUserByIdRow, 
 }
 
 const insertUser = `-- name: InsertUser :one
-INSERT INTO users (name, email, password)
+INSERT INTO
+    users (name, email, password)
 VALUES ($1, $2, $3)
-RETURNING id, name, email
+RETURNING
+    id,
+    name,
+    email,
+    created_at,
+    updated_at
 `
 
 type InsertUserParams struct {
@@ -112,14 +141,54 @@ type InsertUserParams struct {
 }
 
 type InsertUserRow struct {
-	ID    int32
-	Name  string
-	Email string
+	ID        int32
+	Name      string
+	Email     string
+	CreatedAt pgtype.Timestamptz
+	UpdatedAt pgtype.Timestamp
 }
 
 func (q *Queries) InsertUser(ctx context.Context, arg InsertUserParams) (InsertUserRow, error) {
 	row := q.db.QueryRow(ctx, insertUser, arg.Name, arg.Email, arg.Password)
 	var i InsertUserRow
-	err := row.Scan(&i.ID, &i.Name, &i.Email)
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.Email,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
 	return i, err
+}
+
+const updateUserById = `-- name: UpdateUserById :exec
+UPDATE users
+SET
+    name = $2,
+    email = $3,
+    updated_at = $4
+WHERE
+    id = $1
+RETURNING
+    id,
+    name,
+    email,
+    updated_at
+`
+
+type UpdateUserByIdParams struct {
+	ID        int32
+	Name      string
+	Email     string
+	UpdatedAt pgtype.Timestamp
+}
+
+func (q *Queries) UpdateUserById(ctx context.Context, arg UpdateUserByIdParams) error {
+	_, err := q.db.Exec(ctx, updateUserById,
+		arg.ID,
+		arg.Name,
+		arg.Email,
+		arg.UpdatedAt,
+	)
+	return err
 }

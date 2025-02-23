@@ -9,8 +9,8 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/gofiber/fiber/v2"
-	"github.com/gofiber/fiber/v2/middleware/cors"
+	"github.com/gofiber/fiber/v3"
+	"github.com/gofiber/fiber/v3/middleware/logger"
 	"github.com/joho/godotenv"
 )
 
@@ -24,7 +24,15 @@ func RunApp() *fiber.App {
 		IdleTimeout: time.Hour * 1,
 	})
 
-	app.Use(cors.New())
+	logFile, err := os.OpenFile("tmp/app.log", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
+	if err != nil {
+		log.Println(err)
+	}
+	app.Use(logger.New(logger.Config{
+		Format:     "[LOG] ${time} ${status} - ${latency} ${method} ${path}\n",
+		TimeFormat: "2006/01/2 15:04:05",
+		Output:     logFile,
+	}))
 
 	setUpGracefulShutdown(app)
 

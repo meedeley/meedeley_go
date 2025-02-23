@@ -7,9 +7,10 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/golang-jwt/jwt/v5"
+	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/meedeley/go-launch-starter-code/db/models/users"
 	"github.com/meedeley/go-launch-starter-code/internal/conf"
-	"github.com/meedeley/go-launch-starter-code/internal/domain"
+	"github.com/meedeley/go-launch-starter-code/internal/entities"
 	"github.com/meedeley/go-launch-starter-code/pkg"
 	"golang.org/x/crypto/bcrypt"
 )
@@ -24,9 +25,9 @@ func CheckPasswordHash(password, hash string) bool {
 	return err == nil
 }
 
-func Register(c *fiber.Ctx) error {
-	var userReq domain.UserRegisterRequest
-	var userRes domain.UserRegisterResponse
+func Register(c fiber.Ctx) error {
+	var userReq entities.UserRegisterRequest
+	var userRes entities.UserRegisterResponse
 
 	ctx, cancel := context.WithTimeout(c.Context(), 10*time.Second)
 
@@ -35,7 +36,7 @@ func Register(c *fiber.Ctx) error {
 	if err := c.BodyParser(&userReq); err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(pkg.Response{
 			Status:  500,
-			Message: "Failed to parse request body",
+			Message: fiber.ErrInternalServerError.Message,
 			Data:    err.Error(),
 		})
 	}
@@ -43,7 +44,7 @@ func Register(c *fiber.Ctx) error {
 	if errors := userReq.Validate(); errors != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(pkg.Response{
 			Status:  409,
-			Message: "failed to validate register request",
+			Message: fiber.ErrBadRequest.Message,
 			Data:    errors,
 		})
 	}
@@ -64,22 +65,24 @@ func Register(c *fiber.Ctx) error {
 		return err
 	}
 
-	userRes = domain.UserRegisterResponse{
-		Id:    row.ID,
-		Name:  row.Name,
-		Email: row.Email,
+	userRes = entities.UserRegisterResponse{
+		Id:        row.ID,
+		Name:      row.Name,
+		Email:     row.Email,
+		CreatedAt: row.CreatedAt.Time,
+		UpdatedAt: row.UpdatedAt.Time,
 	}
 
-	return c.JSON(pkg.Response{
+	return c.Status(fiber.StatusOK).JSON(pkg.Response{
 		Status:  201,
 		Data:    userRes,
 		Message: "successfully create data user",
 	})
 }
 
-func Login(c *fiber.Ctx) error {
-	var userReq domain.UserLoginRequest
-	var userRes domain.UserLoginResponse
+func Login(c fiber.Ctx) error {
+	var userReq entities.UserLoginRequest
+	var userRes entities.UserLoginResponse
 
 	ctx, cancel := context.WithTimeout(c.Context(), 10*time.Second)
 	defer cancel()
@@ -87,14 +90,14 @@ func Login(c *fiber.Ctx) error {
 	if err := c.BodyParser(&userReq); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(pkg.Response{
 			Status:  400,
-			Message: "failed to parse request body",
+			Message: fiber.ErrBadRequest.Message,
 		})
 	}
 
 	if errors := userReq.Validate(); errors != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(pkg.Response{
 			Status:  400,
-			Message: "failed to validate login request",
+			Message: fiber.ErrBadRequest.Message,
 			Data:    errors,
 		})
 	}
@@ -110,7 +113,7 @@ func Login(c *fiber.Ctx) error {
 	if err != nil {
 		return c.Status(fiber.StatusNotFound).JSON(pkg.Response{
 			Status:  404,
-			Message: "user not found",
+			Message: fiber.ErrNotFound.Message,
 		})
 	}
 
@@ -118,7 +121,7 @@ func Login(c *fiber.Ctx) error {
 	if !checked {
 		return c.Status(fiber.StatusUnauthorized).JSON(pkg.Response{
 			Status:  401,
-			Message: "invalid password",
+			Message: fiber.ErrUnauthorized.Message,
 		})
 	}
 
@@ -134,11 +137,11 @@ func Login(c *fiber.Ctx) error {
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(pkg.Response{
 			Status:  500,
-			Message: "failed to generate token",
+			Message: fiber.ErrInternalServerError.Message,
 		})
 	}
 
-	userRes = domain.UserLoginResponse{
+	userRes = entities.UserLoginResponse{
 		Id:    result.ID,
 		Name:  result.Name,
 		Email: result.Email,
@@ -152,7 +155,7 @@ func Login(c *fiber.Ctx) error {
 	})
 }
 
-func FindAllUser(c *fiber.Ctx) error {
+func FindAllUser(c fiber.Ctx) error {
 	db, _ := conf.NewPool()
 	defer db.Close()
 
@@ -167,24 +170,35 @@ func FindAllUser(c *fiber.Ctx) error {
 	if err != nil {
 		return c.Status(500).JSON(pkg.Response{
 			Status:  500,
-			Message: "Internal servel error",
+			Message: fiber.ErrInternalServerError.Error(),
 		})
 	}
 
-	if result == nil {
-		result = []users.FindAllUserRow{}
+	userRes := make([]entities.User, len(result))
+	for i, row := range result {
+		userRes[i] = entities.User{
+			Id:        int(row.ID),
+			Name:      row.Name,
+			Email:     row.Email,
+			CreatedAt: row.CreatedAt.Time,
+			UpdatedAt: row.UpdatedAt.Time,
+		}
+	}
+
+	if len(userRes) == 0 {
+		userRes = []entities.User{}
 	}
 
 	return c.Status(fiber.StatusOK).JSON(pkg.Response{
 		Status:  200,
 		Message: "Successfuly find all users",
-		Data:    result,
+		Data:    userRes,
 	})
 
 }
 
-func FindUserById(c *fiber.Ctx) error {
-	var userRes domain.User
+func FindUserById(c fiber.Ctx) error {
+	var userRes entities.User
 
 	db, _ := conf.NewPool()
 	defer db.Close()
@@ -203,11 +217,11 @@ func FindUserById(c *fiber.Ctx) error {
 	if err != nil {
 		return c.Status(fiber.StatusNotFound).JSON(pkg.Response{
 			Status:  404,
-			Message: "not found",
+			Message: fiber.ErrNotFound.Message,
 		})
 	}
 
-	userRes = domain.User{
+	userRes = entities.User{
 		Id:        int(result.ID),
 		Name:      result.Name,
 		Email:     result.Email,
@@ -220,5 +234,64 @@ func FindUserById(c *fiber.Ctx) error {
 		Message: "successfully get data",
 		Data:    userRes,
 	})
+}
 
+func UpdateUser(c fiber.Ctx) error {
+	var userReq entities.UpdateUserRequest
+	var userRes entities.UpdateUserResponse
+
+	db, _ := conf.NewPool()
+	defer db.Close()
+	ctx, cancel := context.WithTimeout(c.Context(), 10*time.Second)
+	defer cancel()
+
+	if err := c.BodyParser(&userReq); err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(pkg.Response{
+			Status:  500,
+			Message: fiber.ErrInternalServerError.Message,
+		})
+	}
+
+	if errors := userReq.Validate(); errors != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(pkg.Response{
+			Status:  409,
+			Message: fiber.ErrBadRequest.Message,
+			Data:    errors,
+		})
+	}
+
+	param := c.Params("id")
+	id, _ := strconv.Atoi(param)
+
+	q := users.New(db)
+
+	err := q.UpdateUserById(ctx, users.UpdateUserByIdParams{
+		ID:        int32(id),
+		Name:      userReq.Name,
+		Email:     userReq.Email,
+		UpdatedAt: pgtype.Timestamp{Time: time.Now()},
+	})
+
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(pkg.Response{
+			Status:  500,
+			Message: fiber.ErrInternalServerError.Message,
+		})
+	}
+
+	result, _ := q.FindUserById(ctx, int32(id))
+
+	userRes = entities.UpdateUserResponse{
+		Id:        result.ID,
+		Name:      result.Name,
+		Email:     result.Email,
+		CreatedAt: result.CreatedAt.Time,
+		UpdatedAt: result.UpdatedAt.Time,
+	}
+
+	return c.Status(fiber.StatusOK).JSON(pkg.Response{
+		Status:  fiber.StatusOK,
+		Message: "Successfully update data user",
+		Data:    userRes,
+	})
 }

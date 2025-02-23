@@ -11,3 +11,4 @@ sql:
         package: "users"
         sql_package: "pgx/v5"
         out: "db/models/users"
+        

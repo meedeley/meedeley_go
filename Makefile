@@ -47,8 +47,22 @@ migrate-down:
 	migrate -path "$(MIGRATIONS_DIR)" -database "$(DATABASE_URL)" down
 
 migrate-version:
-	@echo "Current migration version:" && \
-	migrate -path $(MIGRATIONS_DIR) -database "$(DATABASE_URL)" version
+	@echo "====== MIGRATE VERSION ======"
+	migrate -path "$(MIGRATIONS_DIR)" -database "$(DATABASE_URL)" version
+
+migrate-force:
+	@echo "====== MIGRATE FORCE ======"
+	migrate -path "$(MIGRATIONS_DIR)" -database "$(DATABASE_URL)" force $(VERSION)
+
+migrate-fresh:
+	@echo "====== MIGRATE FRESH ======"
+
+	@echo "====== MIGRATE DOWN ======"
+	migrate -path $(MIGRATIONS_DIR) -database "$(DATABASE_URL)" down
+
+	@echo "====== MIGRATE UP ======"
+	migrate -path $(MIGRATIONS_DIR) -database "$(DATABASE_URL)" up
+
 
 db-test:
 	@echo "Testing database connection..."
