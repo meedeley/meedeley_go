@@ -1,9 +1,20 @@
 package entities
 
 import (
+	"time"
+
 	"github.com/go-playground/validator/v10"
 	"github.com/meedeley/go-launch-starter-code/pkg"
 )
+
+type User struct {
+	Id        int        `json:"id"`
+	Name      string     `json:"name"`
+	Email     string     `json:"email"`
+	Password  string     `json:"password"`
+	CreatedAt *time.Time `json:"created_at"`
+	UpdatedAt *time.Time `json:"updated_at"`
+}
 
 type UserRegisterRequest struct {
 	Name     string `json:"name" form:"name" validate:"required,min=3,max=100"`

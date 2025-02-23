@@ -122,7 +122,8 @@ func Login(c *fiber.Ctx) error {
 	}
 
 	token := jwt.New(jwt.SigningMethodHS256)
-	claims := token.Claims.(jwt.MapClaims)
+
+	var claims jwt.MapClaims = token.Claims.(jwt.MapClaims)
 	claims["user_id"] = result.ID
 	claims["email"] = result.Email
 	claims["name"] = result.Name
@@ -152,12 +153,11 @@ func Login(c *fiber.Ctx) error {
 
 func FindAllUser(c *fiber.Ctx) error {
 	db, _ := conf.NewPool()
+	defer db.Close()
 
 	ctx, cancel := context.WithTimeout(c.Context(), 10*time.Second)
 
 	defer cancel()
-
-	defer db.Close()
 
 	q := users.New(db)
 
@@ -170,10 +170,18 @@ func FindAllUser(c *fiber.Ctx) error {
 		})
 	}
 
+	if result == nil {
+		result = []users.FindAllUserRow{}
+	}
+
 	return c.Status(200).JSON(pkg.Response{
 		Status:  200,
 		Message: "Successfuly find all users",
 		Data:    result,
 	})
+
+}
+
+func findUserById() {
 
 }
