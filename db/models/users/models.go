@@ -13,6 +13,6 @@ type User struct {
 	Name      string
 	Email     string
 	Password  string
-	CreatedAt pgtype.Timestamp
+	CreatedAt pgtype.Timestamptz
 	UpdatedAt pgtype.Timestamp
 }

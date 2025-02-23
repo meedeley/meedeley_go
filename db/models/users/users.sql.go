@@ -10,7 +10,7 @@ import (
 )
 
 const deleteUserById = `-- name: DeleteUserById :exec
-DELETE FROM users WHERE id = $1
+DELETE FROM users WHERE id = $1 RETURNING id, name, email, created_at, updated_at
 `
 
 func (q *Queries) DeleteUserById(ctx context.Context, id int32) error {

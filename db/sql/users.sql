@@ -16,4 +16,4 @@ WHERE id = $1;
 SELECT id, name, email, password FROM users WHERE email = $1;
 
 -- name: DeleteUserById :exec
-DELETE FROM users WHERE id = $1;
+DELETE FROM users WHERE id = $1 RETURNING id, name, email, created_at, updated_at;
