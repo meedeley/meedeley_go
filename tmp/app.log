@@ -68,3 +68,9 @@
 [LOG] 2025/02/23 21:23:51 400 -     17.5341ms POST /api/v1/register
 [LOG] 2025/02/23 21:24:51 400 -   17.307382ms POST /api/v1/register
 [LOG] 2025/02/23 21:24:53 400 -   20.219498ms POST /api/v1/register
+[LOG] 2025/02/23 21:33:18 200 -   27.478903ms GET /api/v1/users
+[LOG] 2025/02/23 21:33:38 404 -      76.661µs PUT /api/v1/users/1
+[LOG] 2025/02/23 21:33:46 200 -    25.65671ms PUT /api/v1/user/1
+[LOG] 2025/02/23 21:34:36 400 -     17.3445ms POST /api/v1/login
+[LOG] 2025/02/23 21:35:44 200 -  1.550298098s POST /api/v1/login
+[LOG] 2025/02/23 21:38:12 200 -  1.444251283s POST /api/v1/login

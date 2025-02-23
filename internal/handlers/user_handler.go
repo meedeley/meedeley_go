@@ -142,10 +142,12 @@ func Login(c fiber.Ctx) error {
 	}
 
 	userRes = entities.UserLoginResponse{
-		Id:    result.ID,
-		Name:  result.Name,
-		Email: result.Email,
-		Token: tokenString,
+		Id:        result.ID,
+		Name:      result.Name,
+		Email:     result.Email,
+		Token:     tokenString,
+		CreatedAt: result.CreatedAt.Time,
+		UpdatedAt: result.UpdatedAt.Time,
 	}
 
 	return c.Status(fiber.StatusOK).JSON(pkg.Response{
@@ -270,7 +272,7 @@ func UpdateUser(c fiber.Ctx) error {
 		ID:        int32(id),
 		Name:      userReq.Name,
 		Email:     userReq.Email,
-		UpdatedAt: pgtype.Timestamp{Time: updatedAt},
+		UpdatedAt: pgtype.Timestamptz{Time: updatedAt, Valid: true},
 	})
 
 	if err != nil {
@@ -295,4 +297,12 @@ func UpdateUser(c fiber.Ctx) error {
 		Message: "Successfully update data user",
 		Data:    userRes,
 	})
+}
+
+func DeleteUser(c fiber.Ctx) error {
+	param := c.Params("id")
+
+	id, _ := strconv.Atoi(param)
+
+	pool.db
 }

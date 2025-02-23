@@ -37,7 +37,7 @@ type FindAllUserRow struct {
 	Name      string
 	Email     string
 	CreatedAt pgtype.Timestamptz
-	UpdatedAt pgtype.Timestamp
+	UpdatedAt pgtype.Timestamptz
 }
 
 func (q *Queries) FindAllUser(ctx context.Context) ([]FindAllUserRow, error) {
@@ -67,24 +67,19 @@ func (q *Queries) FindAllUser(ctx context.Context) ([]FindAllUserRow, error) {
 }
 
 const findUserByEmail = `-- name: FindUserByEmail :one
-SELECT id, name, email, password FROM users WHERE email = $1
+SELECT id, name, email, password,created_at, updated_at FROM users WHERE email = $1
 `
 
-type FindUserByEmailRow struct {
-	ID       int32
-	Name     string
-	Email    string
-	Password string
-}
-
-func (q *Queries) FindUserByEmail(ctx context.Context, email string) (FindUserByEmailRow, error) {
+func (q *Queries) FindUserByEmail(ctx context.Context, email string) (User, error) {
 	row := q.db.QueryRow(ctx, findUserByEmail, email)
-	var i FindUserByEmailRow
+	var i User
 	err := row.Scan(
 		&i.ID,
 		&i.Name,
 		&i.Email,
 		&i.Password,
+		&i.CreatedAt,
+		&i.UpdatedAt,
 	)
 	return i, err
 }
@@ -106,7 +101,7 @@ type FindUserByIdRow struct {
 	Name      string
 	Email     string
 	CreatedAt pgtype.Timestamptz
-	UpdatedAt pgtype.Timestamp
+	UpdatedAt pgtype.Timestamptz
 }
 
 func (q *Queries) FindUserById(ctx context.Context, id int32) (FindUserByIdRow, error) {
@@ -145,7 +140,7 @@ type InsertUserRow struct {
 	Name      string
 	Email     string
 	CreatedAt pgtype.Timestamptz
-	UpdatedAt pgtype.Timestamp
+	UpdatedAt pgtype.Timestamptz
 }
 
 func (q *Queries) InsertUser(ctx context.Context, arg InsertUserParams) (InsertUserRow, error) {
@@ -173,6 +168,7 @@ RETURNING
     id,
     name,
     email,
+    created_at,
     updated_at
 `
 
@@ -180,7 +176,7 @@ type UpdateUserByIdParams struct {
 	ID        int32
 	Name      string
 	Email     string
-	UpdatedAt pgtype.Timestamp
+	UpdatedAt pgtype.Timestamptz
 }
 
 func (q *Queries) UpdateUserById(ctx context.Context, arg UpdateUserByIdParams) error {

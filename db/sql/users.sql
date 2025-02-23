@@ -13,7 +13,7 @@ RETURNING
     updated_at;
 
 -- name: FindUserByEmail :one
-SELECT id, name, email, password FROM users WHERE email = $1;
+SELECT id, name, email, password,created_at, updated_at FROM users WHERE email = $1;
 
 -- name: FindUserById :one
 SELECT
@@ -38,6 +38,7 @@ RETURNING
     id,
     name,
     email,
+    created_at,
     updated_at;
 
 -- name: DeleteUserById :exec

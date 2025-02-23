@@ -14,5 +14,5 @@ type User struct {
 	Email     string
 	Password  string
 	CreatedAt pgtype.Timestamptz
-	UpdatedAt pgtype.Timestamp
+	UpdatedAt pgtype.Timestamptz
 }

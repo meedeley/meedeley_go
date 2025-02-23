@@ -40,17 +40,14 @@ type UserRegisterResponse struct {
 }
 
 type UserLoginRequest struct {
-	Email    string `json:"email" form:"email" validate:"required,email,unique_email"`
+	Email    string `json:"email" form:"email" validate:"required,email"`
 	Password string `json:"password" form:"password" validate:"required,min=8"`
 }
 
 func (r *UserLoginRequest) Validate() []pkg.ValidationError {
 	validate := validator.New()
 
-	validate.RegisterValidation("unique_email", pkg.UniqueEmailValidator)
-	err := validate.Struct(r)
-
-	return pkg.ParseValidate(err)
+	return pkg.ParseValidate(validate.Struct(r))
 }
 
 type UserLoginResponse struct {
