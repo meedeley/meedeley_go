@@ -14,16 +14,16 @@ func Http() *fiber.App {
 	api := app.Group("api")
 	v1 := api.Group("v1")
 
-	v2 := api.Group("v2")
-
-	v2.Get("/users", handlers.FindAllUser)
 	v1.Post("/register", handlers.Register)
 	v1.Post("/login", handlers.Login)
 
+	// => CRUD USER OPERATION
 	v1.Get("/users", handlers.FindAllUser)
 	v1.Get("/user/:id", handlers.FindUserById)
 	v1.Put("/user/:id", handlers.UpdateUser)
 	v1.Delete("/user/:id", handlers.DeleteUser)
+
+	// => CRUD EXAMPLE OPERATION
 
 	return app
 }

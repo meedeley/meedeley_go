@@ -178,12 +178,16 @@ func FindAllUser(c fiber.Ctx) error {
 
 	userRes := make([]entities.User, len(result))
 	for i, row := range result {
+		var updatedAt *time.Time
+		if row.UpdatedAt.Valid {
+			updatedAt = &row.UpdatedAt.Time
+		}
 		userRes[i] = entities.User{
 			Id:        int(row.ID),
 			Name:      row.Name,
 			Email:     row.Email,
 			CreatedAt: row.CreatedAt.Time,
-			UpdatedAt: row.UpdatedAt.Time,
+			UpdatedAt: updatedAt,
 		}
 	}
 
@@ -223,12 +227,17 @@ func FindUserById(c fiber.Ctx) error {
 		})
 	}
 
+	var updatedAt *time.Time
+	if result.UpdatedAt.Valid {
+		updatedAt = &result.UpdatedAt.Time
+	}
+
 	userRes = entities.User{
 		Id:        int(result.ID),
 		Name:      result.Name,
 		Email:     result.Email,
-		CreatedAt: userRes.CreatedAt,
-		UpdatedAt: userRes.UpdatedAt,
+		CreatedAt: result.CreatedAt.Time,
+		UpdatedAt: updatedAt,
 	}
 
 	return c.Status(fiber.StatusOK).JSON(pkg.Response{
@@ -310,12 +319,17 @@ func DeleteUser(c fiber.Ctx) error {
 
 	q := users.New(db)
 	row, err := q.FindUserById(c.Context(), int32(id))
+
+	var updatedAt *time.Time
+	if row.UpdatedAt.Valid {
+		updatedAt = &row.UpdatedAt.Time
+	}
 	userRes = entities.User{
 		Id:        int(row.ID),
 		Name:      row.Name,
 		Email:     row.Email,
 		CreatedAt: row.CreatedAt.Time,
-		UpdatedAt: row.UpdatedAt.Time,
+		UpdatedAt: updatedAt,
 	}
 
 	if err != nil {
