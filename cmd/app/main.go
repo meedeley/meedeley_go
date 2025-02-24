@@ -4,12 +4,12 @@ import (
 	"log"
 
 	"github.com/gofiber/fiber/v3"
-	"github.com/meedeley/go-launch-starter-code/internal/bootstrap"
 	"github.com/meedeley/go-launch-starter-code/internal/delivery/http/route"
+	"github.com/meedeley/go-launch-starter-code/internal/provider"
 )
 
 func main() {
-	container := bootstrap.BuildContainer()
+	container := provider.BuildContainer()
 
 	err := container.Invoke(func(rc route.RouteConfig, app *fiber.App) {
 		rc.SetupRoutes()

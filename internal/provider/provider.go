@@ -1,4 +1,4 @@
-package bootstrap
+package provider
 
 import (
 	"github.com/meedeley/go-launch-starter-code/internal/conf"
