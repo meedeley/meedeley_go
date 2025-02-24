@@ -1,1 +1,4 @@
 .env
+./tmp/app.log
+./tmp/build/errors.log
+./tmp/database.sql

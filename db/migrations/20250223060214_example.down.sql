@@ -1,0 +1,2 @@
+DROP TABLE IF EXISTS examples;
+DROP SEQUENCE IF EXISTS example_seq_id;
