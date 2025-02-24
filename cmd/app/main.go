@@ -9,7 +9,7 @@ import (
 )
 
 func main() {
-	container := provider.BuildContainer()
+	container := provider.BuildProvider()
 
 	err := container.Invoke(func(rc route.RouteConfig, app *fiber.App) {
 		rc.SetupRoutes()

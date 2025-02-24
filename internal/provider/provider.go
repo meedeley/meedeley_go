@@ -30,7 +30,7 @@ func registerRespository(container *dig.Container) {
 	// container.Provide()
 }
 
-func BuildContainer() *dig.Container {
+func BuildProvider() *dig.Container {
 	container := dig.New()
 
 	registerApp(container)
