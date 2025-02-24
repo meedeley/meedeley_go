@@ -8,7 +8,7 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/meedeley/go-launch-starter-code/db/models/users"
 	"github.com/meedeley/go-launch-starter-code/internal/conf"
-	"github.com/meedeley/go-launch-starter-code/internal/entities"
+	"github.com/meedeley/go-launch-starter-code/internal/entity"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -30,7 +30,7 @@ func CheckPasswordHash(password, hash string) bool {
 	return err == nil
 }
 
-func (u *UserUseCase) Register(ctx context.Context, userReq entities.UserRegisterRequest) (*entities.UserRegisterResponse, error) {
+func (u *UserUseCase) Register(ctx context.Context, userReq entity.UserRegisterRequest) (*entity.UserRegisterResponse, error) {
 	db := u.db
 	q := users.New(db)
 
@@ -47,7 +47,7 @@ func (u *UserUseCase) Register(ctx context.Context, userReq entities.UserRegiste
 		updatedAt = &row.UpdatedAt.Time
 	}
 
-	userRes := entities.UserRegisterResponse{
+	userRes := entity.UserRegisterResponse{
 		Id:        row.ID,
 		Name:      row.Name,
 		Email:     row.Email,
@@ -58,7 +58,7 @@ func (u *UserUseCase) Register(ctx context.Context, userReq entities.UserRegiste
 	return &userRes, err
 }
 
-func (u UserUseCase) Login(ctx context.Context, userReq entities.UserLoginRequest) (*entities.UserLoginResponse, error) {
+func (u UserUseCase) Login(ctx context.Context, userReq entity.UserLoginRequest) (*entity.UserLoginResponse, error) {
 	db := u.db
 	defer db.Close()
 	q := users.New(db)
@@ -89,7 +89,7 @@ func (u UserUseCase) Login(ctx context.Context, userReq entities.UserLoginReques
 		return nil, err
 	}
 
-	userRes := entities.UserLoginResponse{
+	userRes := entity.UserLoginResponse{
 		Id:        result.ID,
 		Name:      result.Name,
 		Email:     result.Email,

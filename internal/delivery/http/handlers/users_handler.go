@@ -9,7 +9,7 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/meedeley/go-launch-starter-code/db/models/users"
 	"github.com/meedeley/go-launch-starter-code/internal/conf"
-	"github.com/meedeley/go-launch-starter-code/internal/entities"
+	"github.com/meedeley/go-launch-starter-code/internal/entity"
 	"github.com/meedeley/go-launch-starter-code/internal/usecase"
 	"github.com/meedeley/go-launch-starter-code/pkg"
 )
@@ -23,7 +23,7 @@ func NewUserHandler(usecase usecase.UserUseCase) *UserHandler {
 }
 
 func (uc *UserHandler) Register(c fiber.Ctx) error {
-	var userReq entities.UserRegisterRequest
+	var userReq entity.UserRegisterRequest
 
 	ctx, cancel := context.WithTimeout(c.Context(), 10*time.Second)
 
@@ -59,7 +59,7 @@ func (uc *UserHandler) Register(c fiber.Ctx) error {
 }
 
 func (uc *UserHandler) Login(c fiber.Ctx) error {
-	var userReq entities.UserLoginRequest
+	var userReq entity.UserLoginRequest
 
 	ctx, cancel := context.WithTimeout(c.Context(), 10*time.Second)
 	defer cancel()
@@ -112,13 +112,13 @@ func (h *UserHandler) FindAll(c fiber.Ctx) error {
 		})
 	}
 
-	userRes := make([]entities.User, len(result))
+	userRes := make([]entity.User, len(result))
 	for i, row := range result {
 		var updatedAt *time.Time
 		if row.UpdatedAt.Valid {
 			updatedAt = &row.UpdatedAt.Time
 		}
-		userRes[i] = entities.User{
+		userRes[i] = entity.User{
 			Id:        int(row.ID),
 			Name:      row.Name,
 			Email:     row.Email,
@@ -128,7 +128,7 @@ func (h *UserHandler) FindAll(c fiber.Ctx) error {
 	}
 
 	if len(userRes) == 0 {
-		userRes = []entities.User{}
+		userRes = []entity.User{}
 	}
 
 	return c.Status(fiber.StatusOK).JSON(pkg.Response{
@@ -140,7 +140,7 @@ func (h *UserHandler) FindAll(c fiber.Ctx) error {
 }
 
 func (h *UserHandler) FindById(c fiber.Ctx) error {
-	var userRes entities.User
+	var userRes entity.User
 
 	db, _ := conf.NewPool()
 	defer db.Close()
@@ -168,7 +168,7 @@ func (h *UserHandler) FindById(c fiber.Ctx) error {
 		updatedAt = &result.UpdatedAt.Time
 	}
 
-	userRes = entities.User{
+	userRes = entity.User{
 		Id:        int(result.ID),
 		Name:      result.Name,
 		Email:     result.Email,
@@ -184,8 +184,8 @@ func (h *UserHandler) FindById(c fiber.Ctx) error {
 }
 
 func Update(c fiber.Ctx) error {
-	var userReq entities.UpdateUserRequest
-	var userRes entities.UpdateUserResponse
+	var userReq entity.UpdateUserRequest
+	var userRes entity.UpdateUserResponse
 
 	db, _ := conf.NewPool()
 	defer db.Close()
@@ -229,7 +229,7 @@ func Update(c fiber.Ctx) error {
 
 	result, _ := q.FindUserById(ctx, int32(id))
 
-	userRes = entities.UpdateUserResponse{
+	userRes = entity.UpdateUserResponse{
 		Id:        result.ID,
 		Name:      result.Name,
 		Email:     result.Email,
@@ -245,7 +245,7 @@ func Update(c fiber.Ctx) error {
 }
 
 func Delete(c fiber.Ctx) error {
-	var userRes entities.User
+	var userRes entity.User
 
 	param := c.Params("id")
 	id, _ := strconv.Atoi(param)
@@ -260,7 +260,7 @@ func Delete(c fiber.Ctx) error {
 	if row.UpdatedAt.Valid {
 		updatedAt = &row.UpdatedAt.Time
 	}
-	userRes = entities.User{
+	userRes = entity.User{
 		Id:        int(row.ID),
 		Name:      row.Name,
 		Email:     row.Email,
