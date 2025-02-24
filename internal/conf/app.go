@@ -1,3 +1,4 @@
+// internal/conf/conf.go
 package conf
 
 import (
@@ -14,7 +15,7 @@ import (
 	"github.com/joho/godotenv"
 )
 
-func RunApp() *fiber.App {
+func ProvideApp() (*fiber.App, error) {
 	if err := godotenv.Load(".env"); err != nil {
 		log.Printf("Warning: Could not load .env file: %v", err)
 	}
@@ -24,19 +25,32 @@ func RunApp() *fiber.App {
 		IdleTimeout: time.Hour * 1,
 	})
 
+	if err := setupLogger(app); err != nil {
+		return nil, err
+	}
+
+	setUpGracefulShutdown(app)
+
+	return app, nil
+}
+
+func setupLogger(app *fiber.App) error {
+	if err := os.MkdirAll("tmp", 0755); err != nil {
+		return err
+	}
+
 	logFile, err := os.OpenFile("tmp/app.log", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
 	if err != nil {
-		log.Println(err)
+		return err
 	}
+
 	app.Use(logger.New(logger.Config{
 		Format:     "[LOG] ${time} ${status} - ${latency} ${method} ${path}\n",
 		TimeFormat: "2006/01/2 15:04:05",
 		Output:     logFile,
 	}))
 
-	setUpGracefulShutdown(app)
-
-	return app
+	return nil
 }
 
 func setUpGracefulShutdown(app *fiber.App) {
@@ -45,27 +59,37 @@ func setUpGracefulShutdown(app *fiber.App) {
 
 	go func() {
 		<-c
-		fmt.Println("Gracefully shutting down...")
-
-		time.Sleep(3 * time.Second)
+		fmt.Println("\n🚨 Gracefully shutting down...")
 
 		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 		defer cancel()
 
-		if err := app.ShutdownWithContext(ctx); err != nil {
-			log.Printf("Error during shutdown: %v", err)
-		}
+		shutdownDone := make(chan struct{})
 
-		select {
-		case <-ctx.Done():
-			if ctx.Err() == context.DeadlineExceeded {
-				fmt.Println("Shutdown timed out after 5 seconds, forcing exit...")
-			} else {
-				fmt.Println("Clean shutdown completed")
+		go func() {
+			if err := app.ShutdownWithContext(ctx); err != nil {
+				log.Printf("Shutdown error: %v", err)
+			}
+			close(shutdownDone)
+		}()
+
+		ticker := time.NewTicker(1 * time.Second)
+		defer ticker.Stop()
+
+		for i := 5; i > 0; i-- {
+			select {
+			case <-ticker.C:
+				fmt.Printf("⏳ Tersisa %d detik...\n", i)
+			case <-shutdownDone:
+				fmt.Println("✅ Shutdown completed early")
+				return
 			}
 		}
-
-		fmt.Println("Cleanup tasks completed")
-		os.Exit(0)
+		select {
+		case <-shutdownDone:
+			fmt.Println("✅ Shutdown completed")
+		case <-ctx.Done():
+			fmt.Println("⏰ Shutdown timeout")
+		}
 	}()
 }

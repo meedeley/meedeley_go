@@ -32,11 +32,11 @@ func (r *UserRegisterRequest) Validate() []pkg.ValidationError {
 }
 
 type UserRegisterResponse struct {
-	Id        any       `json:"id"`
-	Name      string    `json:"name"`
-	Email     string    `json:"email"`
-	CreatedAt time.Time `json:"created_at"`
-	UpdatedAt time.Time `json:"updated_at,omitempty"`
+	Id        any        `json:"id"`
+	Name      string     `json:"name"`
+	Email     string     `json:"email"`
+	CreatedAt time.Time  `json:"created_at"`
+	UpdatedAt *time.Time `json:"updated_at,omitempty"`
 }
 
 type UserLoginRequest struct {

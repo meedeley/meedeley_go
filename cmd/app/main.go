@@ -3,13 +3,21 @@ package main
 import (
 	"log"
 
-	"github.com/meedeley/go-launch-starter-code/internal/deliveries/http"
+	"github.com/gofiber/fiber/v3"
+	"github.com/meedeley/go-launch-starter-code/internal/bootstrap"
+	"github.com/meedeley/go-launch-starter-code/internal/delivery/http/route"
 )
 
 func main() {
-	app := http.Http()
+	container := bootstrap.BuildContainer()
 
-	if err := app.Listen(":3000"); err != nil {
-		log.Fatalf("Gagal menjalankan server: %v", err)
+	err := container.Invoke(func(rc route.RouteConfig, app *fiber.App) {
+		rc.SetupRoutes()
+
+		app.Listen("localhost:3000")
+	})
+
+	if err != nil {
+		log.Fatal("Dependency injection error:", err)
 	}
 }
