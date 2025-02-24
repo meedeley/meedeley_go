@@ -6,9 +6,18 @@ import (
 	"time"
 
 	"github.com/go-playground/validator/v10"
+	"github.com/gofiber/fiber/v3"
 	"github.com/meedeley/go-launch-starter-code/db/models/users"
 	"github.com/meedeley/go-launch-starter-code/internal/conf"
 )
+
+func NewErrorValidation(c fiber.Ctx, errors []ValidationError) error {
+	return c.Status(fiber.StatusBadRequest).JSON(Response{
+		Status:  409,
+		Message: fiber.ErrBadRequest.Message,
+		Data:    errors,
+	})
+}
 
 type ValidationError struct {
 	Field   string `json:"field"`
