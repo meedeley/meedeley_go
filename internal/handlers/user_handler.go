@@ -65,12 +65,17 @@ func Register(c fiber.Ctx) error {
 		return err
 	}
 
+	var updatedAt *time.Time
+	if row.UpdatedAt.Valid {
+		updatedAt = &row.UpdatedAt.Time
+	}
+
 	userRes = entities.UserRegisterResponse{
 		Id:        row.ID,
 		Name:      row.Name,
 		Email:     row.Email,
 		CreatedAt: row.CreatedAt.Time,
-		UpdatedAt: row.UpdatedAt.Time,
+		UpdatedAt: *updatedAt,
 	}
 
 	return c.Status(fiber.StatusOK).JSON(pkg.Response{

@@ -3,10 +3,11 @@ package handlers
 import (
 	"fmt"
 
+	"github.com/gofiber/fiber/v3"
 	"github.com/meedeley/go-launch-starter-code/internal/entities"
 )
 
-func FindAll() ([]entities.Example, error) {
+func FindAllExample(c fiber.Ctx) error {
 	return nil, fmt.Errorf("HAYOO LHOO")
 }
 

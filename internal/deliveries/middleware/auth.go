@@ -1,24 +1,87 @@
 package middleware
 
 import (
-	jwtware "github.com/gofiber/contrib/jwt"
+	"strings"
+	"time"
+
 	"github.com/gofiber/fiber/v3"
+	"github.com/golang-jwt/jwt/v5"
 	"github.com/meedeley/go-launch-starter-code/internal/conf"
+	"github.com/meedeley/go-launch-starter-code/pkg"
 )
 
-func Protected() fiber.Handler {
+func GuestOnly() fiber.Handler {
+	return func(c fiber.Ctx) error {
+		authHeader := c.Get("Authorization")
 
-	return jwtware.New(jwtware.Config{
-		SigningKey:   jwtware.SigningKey{Key: []byte(conf.JwtSecret())},
-		ErrorHandler: jwtError,
-	})
+		if authHeader == "" || !strings.HasPrefix(authHeader, "Bearer ") {
+			return c.Next()
+		}
+
+		tokenString := strings.TrimPrefix(authHeader, "Bearer ")
+
+		token, err := jwt.Parse(tokenString, func(token *jwt.Token) (any, error) {
+			if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+				return nil, fiber.NewError(fiber.StatusUnauthorized, "Unexpected signing method")
+			}
+			return []byte(conf.JwtSecret()), nil
+		})
+
+		if err == nil && token.Valid {
+			return c.Status(fiber.StatusForbidden).JSON(pkg.Response{
+				Status:  403,
+				Message: "Access denied for logged-in users",
+			})
+		}
+
+		return c.Next()
+	}
 }
 
-func jwtError(c *fiber.Ctx, err error) error {
-	if err.Error() == "Missing or malformed JWT" {
-		return c.Status(fiber.StatusBadRequest).
-			JSON(fiber.Map{"status": "error", "message": "Missing or malformed JWT", "data": nil})
+func Protected() fiber.Handler {
+	return func(c fiber.Ctx) error {
+
+		authHeader := c.Get("Authorization")
+		if authHeader == "" || !strings.HasPrefix(authHeader, "Bearer ") {
+			return c.Status(fiber.StatusUnauthorized).JSON(pkg.Response{
+				Status:  401,
+				Message: "Missing or invalid Authorization header",
+			})
+		}
+
+		tokenString := strings.TrimPrefix(authHeader, "Bearer ")
+		token, err := jwt.Parse(tokenString, func(token *jwt.Token) (any, error) {
+			if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+				return nil, fiber.NewError(fiber.StatusUnauthorized, "Unexpected signing method")
+			}
+			return []byte(conf.JwtSecret()), nil
+		})
+
+		if err != nil || !token.Valid {
+			return c.Status(fiber.StatusUnauthorized).JSON(pkg.Response{
+				Status:  401,
+				Message: "Invalid or expired token",
+			})
+		}
+
+		claims, ok := token.Claims.(jwt.MapClaims)
+		if !ok {
+			return c.Status(fiber.StatusUnauthorized).JSON(pkg.Response{
+				Status:  401,
+				Message: "Invalid token claims",
+			})
+		}
+
+		if exp, ok := claims["exp"].(float64); ok {
+			if int64(exp) < time.Now().Unix() {
+				return c.Status(fiber.StatusUnauthorized).JSON(pkg.Response{
+					Status:  401,
+					Message: "Token Expired",
+				})
+			}
+		}
+
+		c.Locals("users", claims)
+		return c.Next()
 	}
-	return c.Status(fiber.StatusUnauthorized).
-		JSON(fiber.Map{"status": "error", "message": "Invalid or expired JWT", "data": nil})
 }
