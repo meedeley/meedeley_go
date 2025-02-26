@@ -187,7 +187,19 @@ func (u UserHandler) Delete(c fiber.Ctx) error {
 	param := c.Params("id")
 	id, _ := strconv.Atoi(param)
 
-	u.UseCase.Delete(c.Context(), int32(id))
+	userRes, err := u.UseCase.Delete(c.Context(), int32(id))
+
+	if err.Error() == "404" {
+		return c.Status(fiber.StatusNotFound).JSON(pkg.Response{
+			Status:  404,
+			Message: fiber.ErrNotFound.Message,
+		})
+	} else if err.Error() == "500" {
+		return c.Status(fiber.StatusInternalServerError).JSON(pkg.Response{
+			Status:  500,
+			Message: fiber.ErrInternalServerError.Message,
+		})
+	}
 
 	return c.Status(fiber.StatusOK).JSON(pkg.Response{
 		Status:  200,

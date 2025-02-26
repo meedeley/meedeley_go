@@ -195,7 +195,7 @@ func (u *UserUseCase) Update(ctx context.Context, id int32, userReq entity.Updat
 	return userRes, nil
 }
 
-func (u *UserUseCase) Delete(ctx context.Context, id int32) (*entity.User, error) {
+func (u *UserUseCase) Delete(ctx context.Context, id int32) (entity.User, error) {
 	db := u.db
 	defer db.Close()
 
@@ -203,13 +203,13 @@ func (u *UserUseCase) Delete(ctx context.Context, id int32) (*entity.User, error
 
 	row, err := q.FindUserById(ctx, id)
 	if err != nil {
-		return nil, errors.New(string(rune(404)))
+		return entity.User{}, errors.New(string(rune(404)))
 	}
 
 	// => Function Delete At Here
 	err = q.DeleteUserById(ctx, id)
 	if err != nil {
-		return nil, errors.New(string(rune(500)))
+		return entity.User{}, errors.New(string(rune(500)))
 	}
 
 	var updatedAt *time.Time
@@ -217,7 +217,7 @@ func (u *UserUseCase) Delete(ctx context.Context, id int32) (*entity.User, error
 		updatedAt = &row.UpdatedAt.Time
 	}
 
-	userRes := &entity.User{
+	userRes := entity.User{
 		Id:        int(row.ID),
 		Name:      row.Name,
 		Email:     row.Email,

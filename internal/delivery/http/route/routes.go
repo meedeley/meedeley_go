@@ -30,5 +30,8 @@ func (c *RouteConfig) setupGuestRoute() {
 }
 
 func (c *RouteConfig) setupAuthRoute() {
-	c.App.Post("/users", c.UserHandler.FindAll)
+	c.App.Get("/users", c.UserHandler.FindAll, c.ProtectedMiddleware)
+	c.App.Get("/user/:id", c.UserHandler.FindById, c.ProtectedMiddleware)
+	c.App.Put("/user/:id", c.UserHandler.Update, c.ProtectedMiddleware)
+	c.App.Delete("/user/:id", c.UserHandler.Delete, c.ProtectedMiddleware)
 }
