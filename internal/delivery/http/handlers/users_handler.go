@@ -6,8 +6,6 @@ import (
 	"time"
 
 	"github.com/gofiber/fiber/v3"
-	"github.com/meedeley/go-launch-starter-code/db/models/users"
-	"github.com/meedeley/go-launch-starter-code/internal/conf"
 	"github.com/meedeley/go-launch-starter-code/internal/entity"
 	"github.com/meedeley/go-launch-starter-code/internal/usecase"
 	"github.com/meedeley/go-launch-starter-code/pkg"
@@ -183,45 +181,13 @@ func (h *UserHandler) Update(c fiber.Ctx) error {
 	})
 }
 
-func Delete(c fiber.Ctx) error {
+func (u UserHandler) Delete(c fiber.Ctx) error {
 	var userRes entity.User
 
 	param := c.Params("id")
 	id, _ := strconv.Atoi(param)
 
-	db, _ := conf.NewPool()
-	defer db.Close()
-
-	q := users.New(db)
-	row, err := q.FindUserById(c.Context(), int32(id))
-
-	var updatedAt *time.Time
-	if row.UpdatedAt.Valid {
-		updatedAt = &row.UpdatedAt.Time
-	}
-	userRes = entity.User{
-		Id:        int(row.ID),
-		Name:      row.Name,
-		Email:     row.Email,
-		CreatedAt: row.CreatedAt.Time,
-		UpdatedAt: updatedAt,
-	}
-
-	if err != nil {
-		return c.Status(fiber.StatusNotFound).JSON(pkg.Response{
-			Status:  404,
-			Message: fiber.ErrNotFound.Message,
-		})
-	}
-
-	err = q.DeleteUserById(c.Context(), int32(id))
-
-	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(pkg.Response{
-			Status:  200,
-			Message: fiber.ErrInternalServerError.Message,
-		})
-	}
+	u.UseCase.Delete(c.Context(), int32(id))
 
 	return c.Status(fiber.StatusOK).JSON(pkg.Response{
 		Status:  200,

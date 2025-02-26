@@ -2,10 +2,11 @@ package usecase
 
 import (
 	"context"
+	"errors"
 	"time"
 
 	"github.com/golang-jwt/jwt"
-	"github.com/jackc/pgx/pgtype"
+	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/meedeley/go-launch-starter-code/db/models/users"
 	"github.com/meedeley/go-launch-starter-code/internal/conf"
@@ -164,7 +165,6 @@ func (u *UserUseCase) FindById(ctx context.Context, id int32) (entity.User, erro
 }
 
 func (u *UserUseCase) Update(ctx context.Context, id int32, userReq entity.UpdateUserRequest) (entity.UpdateUserResponse, error) {
-
 	db := u.db
 	defer db.Close()
 
@@ -195,6 +195,35 @@ func (u *UserUseCase) Update(ctx context.Context, id int32, userReq entity.Updat
 	return userRes, nil
 }
 
-func (u UserUseCase) Delete(ctx, id int32) {
+func (u *UserUseCase) Delete(ctx context.Context, id int32) (*entity.User, error) {
+	db := u.db
+	defer db.Close()
 
+	q := users.New(db)
+
+	row, err := q.FindUserById(ctx, id)
+	if err != nil {
+		return nil, errors.New(string(rune(404)))
+	}
+
+	// => Function Delete At Here
+	err = q.DeleteUserById(ctx, id)
+	if err != nil {
+		return nil, errors.New(string(rune(500)))
+	}
+
+	var updatedAt *time.Time
+	if row.UpdatedAt.Valid {
+		updatedAt = &row.UpdatedAt.Time
+	}
+
+	userRes := &entity.User{
+		Id:        int(row.ID),
+		Name:      row.Name,
+		Email:     row.Email,
+		CreatedAt: row.CreatedAt.Time,
+		UpdatedAt: updatedAt,
+	}
+
+	return userRes, nil
 }
