@@ -94,41 +94,18 @@ func (uc *UserHandler) Login(c fiber.Ctx) error {
 }
 
 func (h *UserHandler) FindAll(c fiber.Ctx) error {
-	db, _ := conf.NewPool()
-	defer db.Close()
-
 	ctx, cancel := context.WithTimeout(c.Context(), 10*time.Second)
 
 	defer cancel()
 
-	q := users.New(db)
-
-	result, err := q.FindAllUser(ctx)
+	userRes, err := h.UseCase.FindAll(ctx)
 
 	if err != nil {
-		return c.Status(500).JSON(pkg.Response{
+		return c.Status(fiber.StatusInternalServerError).JSON(pkg.Response{
 			Status:  500,
-			Message: fiber.ErrInternalServerError.Error(),
+			Message: fiber.ErrInternalServerError.Message,
+			Data:    err.Error(),
 		})
-	}
-
-	userRes := make([]entity.User, len(result))
-	for i, row := range result {
-		var updatedAt *time.Time
-		if row.UpdatedAt.Valid {
-			updatedAt = &row.UpdatedAt.Time
-		}
-		userRes[i] = entity.User{
-			Id:        int(row.ID),
-			Name:      row.Name,
-			Email:     row.Email,
-			CreatedAt: row.CreatedAt.Time,
-			UpdatedAt: updatedAt,
-		}
-	}
-
-	if len(userRes) == 0 {
-		userRes = []entity.User{}
 	}
 
 	return c.Status(fiber.StatusOK).JSON(pkg.Response{
@@ -142,9 +119,6 @@ func (h *UserHandler) FindAll(c fiber.Ctx) error {
 func (h *UserHandler) FindById(c fiber.Ctx) error {
 	var userRes entity.User
 
-	db, _ := conf.NewPool()
-	defer db.Close()
-
 	ctx, cancel := context.WithTimeout(c.Context(), 10*time.Second)
 
 	defer cancel()
@@ -152,28 +126,14 @@ func (h *UserHandler) FindById(c fiber.Ctx) error {
 	param := c.Params("id")
 	id, _ := strconv.Atoi(param)
 
-	q := users.New(db)
-
-	result, err := q.FindUserById(ctx, int32(id))
+	userRes, err := h.UseCase.FindById(ctx, int32(id))
 
 	if err != nil {
-		return c.Status(fiber.StatusNotFound).JSON(pkg.Response{
-			Status:  404,
-			Message: fiber.ErrNotFound.Message,
+		return c.Status(fiber.StatusInternalServerError).JSON(pkg.Response{
+			Status:  500,
+			Message: fiber.ErrInternalServerError.Message,
+			Data:    err.Error(),
 		})
-	}
-
-	var updatedAt *time.Time
-	if result.UpdatedAt.Valid {
-		updatedAt = &result.UpdatedAt.Time
-	}
-
-	userRes = entity.User{
-		Id:        int(result.ID),
-		Name:      result.Name,
-		Email:     result.Email,
-		CreatedAt: result.CreatedAt.Time,
-		UpdatedAt: updatedAt,
 	}
 
 	return c.Status(fiber.StatusOK).JSON(pkg.Response{

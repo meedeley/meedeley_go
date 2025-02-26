@@ -100,3 +100,64 @@ func (u UserUseCase) Login(ctx context.Context, userReq entity.UserLoginRequest)
 
 	return &userRes, nil
 }
+
+func (u *UserUseCase) FindAll(ctx context.Context) ([]entity.User, error) {
+	db := u.db
+	defer db.Close()
+	q := users.New(db)
+
+	result, err := q.FindAllUser(ctx)
+
+	if err != nil {
+		return nil, err
+	}
+
+	userRes := make([]entity.User, len(result))
+	for i, row := range result {
+		var updatedAt *time.Time
+		if row.UpdatedAt.Valid {
+			updatedAt = &row.UpdatedAt.Time
+		}
+		userRes[i] = entity.User{
+			Id:        int(row.ID),
+			Name:      row.Name,
+			Email:     row.Email,
+			CreatedAt: row.CreatedAt.Time,
+			UpdatedAt: updatedAt,
+		}
+	}
+
+	if len(userRes) == 0 {
+		userRes = []entity.User{}
+	}
+
+	return userRes, nil
+}
+
+func (u *UserUseCase) FindById(ctx context.Context, id int32) (entity.User, error) {
+	db, _ := conf.NewPool()
+	defer db.Close()
+
+	q := users.New(db)
+
+	result, err := q.FindUserById(ctx, int32(id))
+
+	if err != nil {
+		return entity.User{}, err
+	}
+
+	var updatedAt *time.Time
+	if result.UpdatedAt.Valid {
+		updatedAt = &result.UpdatedAt.Time
+	}
+
+	userRes := entity.User{
+		Id:        int(result.ID),
+		Name:      result.Name,
+		Email:     result.Email,
+		CreatedAt: result.CreatedAt.Time,
+		UpdatedAt: updatedAt,
+	}
+
+	return userRes, nil
+}
