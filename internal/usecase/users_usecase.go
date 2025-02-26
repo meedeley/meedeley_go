@@ -62,7 +62,6 @@ func (u *UserUseCase) Register(ctx context.Context, userReq entity.UserRegisterR
 
 func (u UserUseCase) Login(ctx context.Context, userReq entity.UserLoginRequest) (*entity.UserLoginResponse, error) {
 	db := u.db
-	defer db.Close()
 	q := users.New(db)
 
 	email := userReq.Email
@@ -105,7 +104,6 @@ func (u UserUseCase) Login(ctx context.Context, userReq entity.UserLoginRequest)
 
 func (u *UserUseCase) FindAll(ctx context.Context) ([]entity.User, error) {
 	db := u.db
-	defer db.Close()
 	q := users.New(db)
 
 	result, err := q.FindAllUser(ctx)
@@ -138,7 +136,6 @@ func (u *UserUseCase) FindAll(ctx context.Context) ([]entity.User, error) {
 
 func (u *UserUseCase) FindById(ctx context.Context, id int32) (entity.User, error) {
 	db, _ := conf.NewPool()
-	defer db.Close()
 
 	q := users.New(db)
 
@@ -166,7 +163,6 @@ func (u *UserUseCase) FindById(ctx context.Context, id int32) (entity.User, erro
 
 func (u *UserUseCase) Update(ctx context.Context, id int32, userReq entity.UpdateUserRequest) (entity.UpdateUserResponse, error) {
 	db := u.db
-	defer db.Close()
 
 	q := users.New(db)
 
@@ -197,7 +193,6 @@ func (u *UserUseCase) Update(ctx context.Context, id int32, userReq entity.Updat
 
 func (u *UserUseCase) Delete(ctx context.Context, id int32) (entity.User, error) {
 	db := u.db
-	defer db.Close()
 
 	q := users.New(db)
 

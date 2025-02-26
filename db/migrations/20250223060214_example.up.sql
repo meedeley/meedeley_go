@@ -1,9 +1,0 @@
-CREATE SEQUENCE IF NOT EXISTS example_seq_id;
-
-CREATE TABLE IF NOT EXISTS examples (
-    "id" INT PRIMARY KEY DEFAULT nextval('example_seq_id') NOT NULL,
-    "name" VARCHAR(100) NOT NULL,
-    "description" VARCHAR(100) NOT NULL,
-    "created_at" TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    "updated_at" TIMESTAMP WITH TIME ZONE
-);
