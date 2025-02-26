@@ -6,7 +6,6 @@ import (
 	"time"
 
 	"github.com/gofiber/fiber/v3"
-	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/meedeley/go-launch-starter-code/db/models/users"
 	"github.com/meedeley/go-launch-starter-code/internal/conf"
 	"github.com/meedeley/go-launch-starter-code/internal/entity"
@@ -143,12 +142,9 @@ func (h *UserHandler) FindById(c fiber.Ctx) error {
 	})
 }
 
-func Update(c fiber.Ctx) error {
+func (h *UserHandler) Update(c fiber.Ctx) error {
 	var userReq entity.UpdateUserRequest
-	var userRes entity.UpdateUserResponse
 
-	db, _ := conf.NewPool()
-	defer db.Close()
 	ctx, cancel := context.WithTimeout(c.Context(), 10*time.Second)
 	defer cancel()
 
@@ -170,31 +166,14 @@ func Update(c fiber.Ctx) error {
 	param := c.Params("id")
 	id, _ := strconv.Atoi(param)
 
-	q := users.New(db)
-
-	updatedAt := time.Now()
-	err := q.UpdateUserById(ctx, users.UpdateUserByIdParams{
-		ID:        int32(id),
-		Name:      userReq.Name,
-		Email:     userReq.Email,
-		UpdatedAt: pgtype.Timestamptz{Time: updatedAt, Valid: true},
-	})
+	userRes, err := h.UseCase.Update(ctx, int32(id), userReq)
 
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(pkg.Response{
 			Status:  500,
 			Message: fiber.ErrInternalServerError.Message,
+			Data:    err.Error(),
 		})
-	}
-
-	result, _ := q.FindUserById(ctx, int32(id))
-
-	userRes = entity.UpdateUserResponse{
-		Id:        result.ID,
-		Name:      result.Name,
-		Email:     result.Email,
-		CreatedAt: result.CreatedAt.Time,
-		UpdatedAt: result.UpdatedAt.Time,
 	}
 
 	return c.Status(fiber.StatusOK).JSON(pkg.Response{

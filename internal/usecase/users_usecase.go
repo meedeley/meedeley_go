@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/golang-jwt/jwt"
+	"github.com/jackc/pgx/pgtype"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/meedeley/go-launch-starter-code/db/models/users"
 	"github.com/meedeley/go-launch-starter-code/internal/conf"
@@ -160,4 +161,40 @@ func (u *UserUseCase) FindById(ctx context.Context, id int32) (entity.User, erro
 	}
 
 	return userRes, nil
+}
+
+func (u *UserUseCase) Update(ctx context.Context, id int32, userReq entity.UpdateUserRequest) (entity.UpdateUserResponse, error) {
+
+	db := u.db
+	defer db.Close()
+
+	q := users.New(db)
+
+	updatedAt := time.Now()
+	err := q.UpdateUserById(ctx, users.UpdateUserByIdParams{
+		ID:        int32(id),
+		Name:      userReq.Name,
+		Email:     userReq.Email,
+		UpdatedAt: pgtype.Timestamptz{Time: updatedAt, Valid: true},
+	})
+
+	if err != nil {
+		return entity.UpdateUserResponse{}, err
+	}
+
+	result, _ := q.FindUserById(ctx, int32(id))
+
+	userRes := entity.UpdateUserResponse{
+		Id:        result.ID,
+		Name:      result.Name,
+		Email:     result.Email,
+		CreatedAt: result.CreatedAt.Time,
+		UpdatedAt: result.UpdatedAt.Time,
+	}
+
+	return userRes, nil
+}
+
+func (u UserUseCase) Delete(ctx, id int32) {
+
 }
